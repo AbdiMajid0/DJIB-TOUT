@@ -116,46 +116,6 @@ export interface PageResponse<T> {
   empty: boolean;
 }
 
-// Fallback data in case the backend is not running
-export const FALLBACK_PRODUCTS: Product[] = [
-  {
-    id: 1,
-    name: "iPhone 15 Pro Max 256GB Titane",
-    description: "Le tout nouvel iPhone 15 Pro Max avec design en titane, puce A17 Pro et appareil photo 48 Mpx.",
-    price: 245000,
-    stockQuantity: 15,
-    images: ["📱"],
-    category: "smartphones"
-  },
-  {
-    id: 2,
-    name: "Samsung Galaxy S24 Ultra",
-    description: "Galaxy AI est là. Découvrez un nouveau niveau de créativité, de productivité et de possibilité.",
-    price: 230000,
-    stockQuantity: 8,
-    images: ["🤳"],
-    category: "smartphones"
-  },
-  {
-    id: 3,
-    name: "MacBook Air M2 13 pouces",
-    description: "Superpuissant grâce à la puce M2. Un design repensé. Jusqu'à 18 heures d'autonomie.",
-    price: 210000,
-    stockQuantity: 5,
-    images: ["💻"],
-    category: "informatique"
-  },
-  {
-    id: 4,
-    name: "Sony PlayStation 5 Édition Standard",
-    description: "Vivez l'expérience de jeu ultime avec des temps de chargement ultra-rapides et des graphismes époustouflants.",
-    price: 115000,
-    stockQuantity: 20,
-    images: ["🎮"],
-    category: "jeux-video"
-  }
-];
-
 export async function fetchProducts(): Promise<Product[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/products`, { next: { revalidate: 60 } });
@@ -178,13 +138,13 @@ export async function fetchProductById(id: number): Promise<Product | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/products/${id}`, { next: { revalidate: 60 } });
     if (!res.ok) {
-      console.warn("Backend API responded with error, returning fallback data for single product");
-      return FALLBACK_PRODUCTS.find(p => p.id === id) || null;
+      console.warn("Backend API responded with error while fetching product");
+      return null;
     }
     return res.json();
   } catch (error) {
-    console.warn("Backend API not reachable, returning fallback data", error);
-    return FALLBACK_PRODUCTS.find(p => p.id === id) || null;
+    console.warn("Backend API not reachable while fetching product", error);
+    return null;
   }
 }
 
@@ -228,37 +188,8 @@ export async function searchProducts(params: SearchParams = {}): Promise<PageRes
 
     return { content: [], totalPages: 0, totalElements: 0, size: 12, number: 0, first: true, last: true, empty: true };
   } catch (error) {
-    console.warn("Backend error in searchProducts, filtering fallback products locally:", error);
-    let filtered = [...FALLBACK_PRODUCTS];
-    if (params.q) {
-      const qLower = params.q.toLowerCase();
-      filtered = filtered.filter(p => p.name.toLowerCase().includes(qLower) || p.description.toLowerCase().includes(qLower));
-    }
-    if (params.category) {
-      filtered = filtered.filter(p => p.category.toLowerCase() === params.category!.toLowerCase());
-    }
-    if (params.minPrice) {
-      filtered = filtered.filter(p => p.price >= params.minPrice!);
-    }
-    if (params.maxPrice) {
-      filtered = filtered.filter(p => p.price <= params.maxPrice!);
-    }
-    if (params.inStock) {
-      filtered = filtered.filter(p => p.stockQuantity > 0);
-    }
-    if (params.sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
-    if (params.sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
-
-    return {
-      content: filtered,
-      totalPages: 1,
-      totalElements: filtered.length,
-      size: 12,
-      number: 0,
-      first: true,
-      last: true,
-      empty: filtered.length === 0
-    };
+    console.warn("Backend error in searchProducts, returning an empty catalog:", error);
+    return { content: [], totalPages: 0, totalElements: 0, size: 12, number: 0, first: true, last: true, empty: true };
   }
 }
 
