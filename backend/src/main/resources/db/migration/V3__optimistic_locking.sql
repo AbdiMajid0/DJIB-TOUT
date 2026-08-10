@@ -1,0 +1,3 @@
+ALTER TABLE products ADD COLUMN IF NOT EXISTS version bigint DEFAULT 0;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS version bigint DEFAULT 0;
+ALTER TABLE seller_stores ADD COLUMN IF NOT EXISTS version bigint DEFAULT 0;

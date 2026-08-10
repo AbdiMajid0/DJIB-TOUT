@@ -1,0 +1,1 @@
+package com.djibtout.backend.repository;import com.djibtout.backend.entity.*;import org.springframework.data.jpa.repository.JpaRepository;import java.util.Optional;public interface SellerStoreRepository extends JpaRepository<SellerStore,Long>{Optional<SellerStore> findBySeller(User seller);}

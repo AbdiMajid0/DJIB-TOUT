@@ -1,0 +1,8 @@
+package com.djibtout.backend.security;
+import jakarta.servlet.*;import jakarta.servlet.http.*;import org.springframework.http.MediaType;import org.springframework.stereotype.Component;import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;import java.time.Instant;import java.util.concurrent.*;
+@Component public class RateLimitFilter extends OncePerRequestFilter{
+ private record Window(long minute,int count){} private final ConcurrentMap<String,Window> windows=new ConcurrentHashMap<>();
+ @Override protected boolean shouldNotFilter(HttpServletRequest r){return !(r.getRequestURI().startsWith("/api/auth/")||r.getRequestURI().equals("/api/upload"));}
+ @Override protected void doFilterInternal(HttpServletRequest req,HttpServletResponse res,FilterChain chain)throws ServletException,IOException{long minute=Instant.now().getEpochSecond()/60;String forwarded=req.getHeader("X-Forwarded-For");String ip=forwarded==null?req.getRemoteAddr():forwarded.split(",")[0].trim();String key=ip+":"+req.getRequestURI();Window w=windows.compute(key,(k,old)->old==null||old.minute()!=minute?new Window(minute,1):new Window(minute,old.count()+1));int limit=req.getRequestURI().contains("/login")?20:60;if(w.count()>limit){res.setStatus(429);res.setContentType(MediaType.APPLICATION_JSON_VALUE);res.getWriter().write("{\"message\":\"Trop de requêtes. Réessayez plus tard.\"}");return;}chain.doFilter(req,res);}
+}

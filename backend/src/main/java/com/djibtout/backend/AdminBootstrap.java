@@ -1,0 +1,3 @@
+package com.djibtout.backend;
+import com.djibtout.backend.entity.*;import com.djibtout.backend.repository.UserRepository;import org.springframework.boot.CommandLineRunner;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;import org.springframework.stereotype.Component;
+@Component @ConditionalOnProperty(name="app.admin-bootstrap.enabled",havingValue="true") public class AdminBootstrap implements CommandLineRunner{private final UserRepository users;public AdminBootstrap(UserRepository users){this.users=users;}public void run(String...args){users.findByEmail("admin@djibtout.local").ifPresent(user->{if(user.getRole()!=Role.ADMIN){user.setRole(Role.ADMIN);user.setEmailVerified(true);user.setSuspended(false);users.save(user);}});}}

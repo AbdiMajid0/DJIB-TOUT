@@ -1,0 +1,11 @@
+package com.djibtout.backend;
+import org.junit.jupiter.api.Test;import org.springframework.beans.factory.annotation.Autowired;import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;import org.springframework.boot.test.context.SpringBootTest;import org.springframework.http.MediaType;import org.springframework.test.web.servlet.MockMvc;import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+@SpringBootTest @AutoConfigureMockMvc class AuthApiTests{
+ @Autowired MockMvc mvc;
+ @Test void invalidRegistrationReturnsStructuredValidationError()throws Exception{mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\",\"email\":\"invalid\",\"password\":\"short\"}")).andExpect(status().isBadRequest()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.code").value("VALIDATION_ERROR")).andExpect(jsonPath("$.details.email").exists());}
+ @Test void invalidRefreshTokenIsRejected()throws Exception{mvc.perform(post("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{\"refreshToken\":\"invalid\"}")).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.message").value("Refresh token invalide."));}
+ @Test void adminApiIsNotPublic()throws Exception{mvc.perform(get("/api/admin/users")).andExpect(status().isUnauthorized()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));}
+ @Test void catalogRemainsPublic()throws Exception{mvc.perform(get("/api/catalog/metadata")).andExpect(status().isOk());}
+ @Test void securityHeadersArePresent()throws Exception{mvc.perform(get("/api/catalog/metadata")).andExpect(header().exists("Content-Security-Policy")).andExpect(header().string("X-Content-Type-Options","nosniff")).andExpect(header().exists("Referrer-Policy")).andExpect(header().exists("Permissions-Policy"));}
+ @Test void uploadRequiresAuthentication()throws Exception{mvc.perform(multipart("/api/upload").file("file",new byte[]{1,2,3})).andExpect(status().isUnauthorized());}
+}

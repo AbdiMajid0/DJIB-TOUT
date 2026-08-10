@@ -1,0 +1,10 @@
+package com.djibtout.backend.controller;
+import com.djibtout.backend.service.SellerEventService;
+import com.djibtout.backend.entity.*;import com.djibtout.backend.repository.*;import jakarta.validation.Valid;import jakarta.validation.constraints.NotBlank;import jakarta.validation.constraints.Size;import org.springframework.http.*;import org.springframework.security.core.Authentication;import org.springframework.web.bind.annotation.*;import java.util.List;
+@RestController @RequestMapping("/api/products/{productId}/questions") public class ProductQuestionController{
+ private final ProductQuestionRepository questions;private final ProductRepository products;private final UserRepository users;private final SellerEventService events;
+ public ProductQuestionController(ProductQuestionRepository q,ProductRepository p,UserRepository u,SellerEventService e){questions=q;products=p;users=u;events=e;}
+ @GetMapping public List<ProductQuestion> list(@PathVariable Long productId){return questions.findByProductIdOrderByCreatedAtDesc(productId);}
+ @PostMapping public ResponseEntity<?> create(@PathVariable Long productId,@Valid @RequestBody Input input,Authentication authentication){if(authentication==null)return ResponseEntity.status(401).body("Connexion requise.");var product=products.findById(productId).orElse(null);var user=users.findByEmail(authentication.getName()).orElse(null);if(product==null)return ResponseEntity.notFound().build();if(user==null)return ResponseEntity.status(401).build();var value=new ProductQuestion();value.setProduct(product);value.setUser(user);value.setQuestion(input.question().trim());var saved=questions.save(value);events.notify(product.getSeller(),"Nouvelle question","Une question a été posée sur « "+product.getName()+" ».");return ResponseEntity.status(201).body(saved);}
+ public record Input(@NotBlank @Size(max=500) String question){}
+}

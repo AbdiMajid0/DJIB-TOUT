@@ -1,0 +1,17 @@
+backups/
+*.dump
+.env
+.env.*
+!.env.example
+frontend/.next/
+frontend/node_modules/
+backend/target/
+video-analysis/
+hb_home.html
+*.log
+.vscode/
+.DS_Store
+Thumbs.db
+frontend/.git.frontend-backup/
+frontend/.eslint-*.json
+frontend/src.zip

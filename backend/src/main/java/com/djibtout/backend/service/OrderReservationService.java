@@ -1,0 +1,5 @@
+package com.djibtout.backend.service;
+import com.djibtout.backend.entity.*;import com.djibtout.backend.repository.*;import org.springframework.scheduling.annotation.Scheduled;import org.springframework.stereotype.Service;import org.springframework.transaction.annotation.Transactional;import java.time.LocalDateTime;
+@Service public class OrderReservationService{private final OrderRepository orders;private final ProductRepository products;public OrderReservationService(OrderRepository o,ProductRepository p){orders=o;products=p;}
+ @Scheduled(fixedDelay=60000) @Transactional public void releaseExpired(){for(Order order:orders.findByStatusAndReservedUntilBefore(OrderStatus.PENDING,LocalDateTime.now())){for(OrderItem item:order.getItems()){Product product=products.findByIdForUpdate(item.getProduct().getId()).orElse(null);if(product!=null){product.setStockQuantity(product.getStockQuantity()+item.getQuantity());products.save(product);}}order.setStatus(OrderStatus.CANCELLED);orders.save(order);}}
+}

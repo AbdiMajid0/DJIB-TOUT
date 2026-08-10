@@ -1,0 +1,3 @@
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+export default function Loading(){return <div className="min-h-screen bg-[#f6f7f9]"><div className="dt-container space-y-5 py-5"><Skeleton height={300} borderRadius={16}/><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{Array.from({length:5},(_,index)=><Skeleton key={index} height={84} borderRadius={12}/>)}</div><div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-slate-200 md:grid-cols-3 lg:grid-cols-5">{Array.from({length:10},(_,index)=><div key={index} className="bg-white p-3"><Skeleton className="aspect-square"/><Skeleton className="mt-3" count={2}/><Skeleton className="mt-3" height={28}/></div>)}</div></div></div>}
