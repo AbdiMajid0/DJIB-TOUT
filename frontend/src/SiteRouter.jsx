@@ -2,6 +2,7 @@ import React from "react";
 import {
   BrowserRouter,
   Link,
+  Navigate,
   NavLink,
   Route,
   Routes,
@@ -1229,6 +1230,29 @@ function SellerProtected({ children, onboarding = false }) {
     return <SellerOnboarding store={store} onRefresh={setStore} />;
   return children;
 }
+/**
+ * Pendant de SellerProtected pour /admin/*. Sans lui, n'importe qui pouvait
+ * ouvrir l'administration en tapant l'URL : l'API refusait bien les données,
+ * mais toute l'interface restait visible.
+ */
+function AdminProtected({ children }) {
+  const { user, checking } = useUser();
+  if (checking)
+    return (
+      <div className="route-loading">
+        <span />
+        <p>Vérification de vos droits…</p>
+      </div>
+    );
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "ADMIN")
+    return (
+      <div className="route-loading">
+        <p>Cette page est réservée aux administrateurs.</p>
+      </div>
+    );
+  return children;
+}
 function ConfirmDialog({
   open,
   title,
@@ -1365,6 +1389,12 @@ function Portal({ type, nav, children }) {
     window.addEventListener("dt:notifications", refresh);
     return () => window.removeEventListener("dt:notifications", refresh);
   }, [type]);
+  // Jusqu'ici le seul accès à l'administration était de taper l'URL à la main.
+  // On ajoute une entrée de menu, visible uniquement pour les comptes ADMIN.
+  const menu =
+    type === "account" && user?.role === "ADMIN"
+      ? [...nav, [ShieldCheck, "Administration", "/admin"]]
+      : nav;
   return (
     <div className={"portal " + type}>
       <aside className={open ? "open" : ""}>
@@ -1382,7 +1412,7 @@ function Portal({ type, nav, children }) {
               : "MON COMPTE"}
         </small>
         <nav>
-          {nav.map(([I, l, u]) => (
+          {menu.map(([I, l, u]) => (
             <NavLink
               key={u}
               to={u}
@@ -1395,18 +1425,16 @@ function Portal({ type, nav, children }) {
           ))}
         </nav>
         <div className="side-user">
-          <i>{type === "admin" ? "AD" : (storeName || user?.name || "VE").slice(0, 2).toUpperCase()}</i>
+          {/* Ces libellés étaient écrits en dur : le portail affichait
+              « Administrateur — Compte actif » même sans session ouverte. */}
+          <i>{(type === "seller" ? storeName || user?.name : user?.name || "?").slice(0, 2).toUpperCase()}</i>
           <span>
             <b>
-              {type === "admin"
-                ? "Administrateur"
-                : type === "seller"
-                  ? storeName || user?.name || "Ma boutique"
-                  : user?.name || "Mon compte"}
+              {type === "seller"
+                ? storeName || user?.name || "Ma boutique"
+                : user?.name || "Non connecté"}
             </b>
-            <small>
-              {type === "seller" ? "Boutique vérifiée" : "Compte actif"}
-            </small>
+            <small>{user?.email || "Aucune session"}</small>
           </span>
           <button className="side-logout" aria-label="Se déconnecter" onClick={() => { logout(); navigate(type === "seller" ? "/vendeur/login" : "/"); }}><LogOut /></button>
         </div>
@@ -1740,7 +1768,11 @@ function ProfileForm({ profile, summary, onSaved, onLogout }) {
           <div className="card-heading">
             <div>
               <h2>Compte et préférences</h2>
-              <p>{profile.email} · Acheteur</p>
+              <p>
+                {profile.email} ·{" "}
+                {{ ADMIN: "Administrateur", SELLER: "Vendeur" }[profile.role] ||
+                  "Acheteur"}
+              </p>
             </div>
             <Bell />
           </div>
@@ -3338,7 +3370,14 @@ function AppRoutes() {
       <Route path="/account/*" element={<Account />} />
       <Route path="/seller/*" element={<Dashboard type="seller" />} />
       <Route path="/vendeur/*" element={<Auth kind="register" />} />
-      <Route path="/admin/*" element={<Dashboard type="admin" />} />
+      <Route
+        path="/admin/*"
+        element={
+          <AdminProtected>
+            <Dashboard type="admin" />
+          </AdminProtected>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
