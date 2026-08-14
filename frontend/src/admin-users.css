@@ -1,0 +1,95 @@
+.admin-users { display: flex; flex-direction: column; gap: 16px; }
+
+.au-chargement { color: #647794; font-size: 14px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Barre de recherche et filtres */
+.au-barre { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.au-recherche { position: relative; flex: 1; min-width: 240px; max-width: 380px; color: #8495ae; }
+.au-recherche svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.au-recherche input {
+  width: 100%; height: 42px; padding: 0 14px 0 40px;
+  border: 1.5px solid #e7eaf0; border-radius: 999px; background: #fff;
+  font: inherit; font-size: 13.5px; color: #0d1524; outline: none; transition: .15s;
+}
+.au-recherche input:focus { border-color: #f2563a; }
+
+.au-filtres { display: flex; gap: 8px; flex-wrap: wrap; }
+.au-filtres button {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 15px; border-radius: 999px;
+  border: 1.5px solid #e7eaf0; background: #fff;
+  font-size: 13px; font-weight: 600; color: #414d63; cursor: pointer; transition: .15s;
+}
+.au-filtres button:hover { border-color: #ffc8bb; color: #d93f24; }
+.au-filtres button.actif { background: #f2563a; border-color: #f2563a; color: #fff; }
+.au-filtres button span {
+  min-width: 20px; padding: 1px 6px; border-radius: 999px;
+  background: rgba(13, 21, 36, .08); font-size: 11.5px; font-weight: 800;
+}
+.au-filtres button.actif span { background: rgba(255, 255, 255, .25); }
+
+/* Messages */
+.au-erreur, .au-succes {
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 600;
+}
+.au-erreur { background: #fbe7e3; color: #b3382b; }
+.au-succes { background: #e3f4ee; color: #0d7a5f; }
+.au-vide {
+  margin: 0; padding: 48px 20px; text-align: center;
+  border: 1px dashed #e7eaf0; border-radius: 16px; color: #8495ae; font-size: 13.5px;
+}
+
+/* Tableau */
+.au-scroll {
+  overflow-x: auto; border: 1px solid #e7eaf0; border-radius: 16px; background: #fff;
+  box-shadow: 0 1px 2px rgba(13, 21, 36, .04), 0 8px 24px -14px rgba(13, 21, 36, .16);
+}
+.admin-users table { width: 100%; border-collapse: collapse; min-width: 720px; }
+.admin-users th, .admin-users td { padding: 14px 20px; text-align: left; font-size: 13.5px; }
+.admin-users thead th {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: #8495ae; border-bottom: 1px solid #e7eaf0; padding-top: 16px; padding-bottom: 11px;
+}
+.admin-users tbody tr { border-bottom: 1px solid #f1f4f8; }
+.admin-users tbody tr:last-child { border-bottom: 0; }
+.admin-users tbody tr.suspendu { background: #fffaf9; }
+.admin-users tbody th { font-weight: 400; }
+.admin-users tbody th b { display: block; font-size: 14px; font-weight: 700; color: #0d1524; }
+.admin-users tbody th small { display: block; margin-top: 2px; font-size: 12.5px; color: #647794; }
+.au-date { color: #647794; white-space: nowrap; }
+
+.au-role { padding: 4px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+.au-role.acheteur { background: #eef4ff; color: #3b62a8; }
+.au-role.vendeur { background: #fff2ef; color: #d93f24; }
+.au-role.admin { background: #f2ecff; color: #6b46c1; }
+
+.au-etats { display: flex; flex-wrap: wrap; gap: 6px; }
+.au-etat { padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.au-etat.actif { background: #e3f4ee; color: #0d7a5f; }
+.au-etat.suspendu { background: #fbe7e3; color: #b3382b; }
+.au-etat.verifie { background: #f2f4f7; color: #647794; }
+.au-etat.attente { background: #fff8e6; color: #cf9412; }
+
+.au-actions { text-align: right; white-space: nowrap; }
+.au-actions button {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 15px; border: 0; border-radius: 999px;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: .15s;
+}
+.au-actions button:disabled { opacity: .55; cursor: not-allowed; }
+.au-suspendre { background: #fbe7e3; color: #b3382b; }
+.au-suspendre:hover:not(:disabled) { background: #f7d5cf; }
+.au-reactiver { background: #e3f4ee; color: #0d7a5f; }
+.au-reactiver:hover:not(:disabled) { background: #d2ece3; }
+.au-protege {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: #8495ae; font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .au-barre { flex-direction: column; align-items: stretch; }
+  .au-recherche { max-width: none; }
+  .admin-users th, .admin-users td { padding: 12px 14px; }
+}
