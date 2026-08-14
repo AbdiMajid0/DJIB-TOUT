@@ -1,0 +1,100 @@
+.admin-mod { display: flex; flex-direction: column; gap: 16px; }
+
+.mo-chargement { color: #647794; font-size: 14px; }
+
+/* Onglets */
+.mo-onglets { display: flex; gap: 8px; border-bottom: 1px solid #e7eaf0; }
+.mo-onglets button {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 12px 18px; border: 0; background: none; cursor: pointer;
+  font-size: 14.5px; font-weight: 700; color: #647794;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px; transition: .15s;
+}
+.mo-onglets button:hover { color: #d93f24; }
+.mo-onglets button.actif { color: #d93f24; border-color: #f2563a; }
+.mo-onglets b {
+  min-width: 20px; padding: 1px 7px; border-radius: 999px;
+  background: #647794; color: #fff; font-size: 11.5px; font-weight: 800;
+}
+
+.mo-note {
+  margin: 0; padding: 12px 16px; border-radius: 12px;
+  background: #f6f8fa; color: #647794; font-size: 13px; line-height: 1.55;
+}
+
+/* Filtres */
+.mo-filtres { display: flex; gap: 8px; flex-wrap: wrap; }
+.mo-filtres button {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1.5px solid #e7eaf0; background: #fff;
+  font-size: 12.5px; font-weight: 600; color: #414d63; cursor: pointer; transition: .15s;
+}
+.mo-filtres button:hover { border-color: #ffc8bb; color: #d93f24; }
+.mo-filtres button.actif { background: #f2563a; border-color: #f2563a; color: #fff; }
+.mo-filtres button span {
+  min-width: 18px; padding: 1px 5px; border-radius: 999px;
+  background: rgba(13, 21, 36, .08); font-size: 11px; font-weight: 800;
+}
+.mo-filtres button.actif span { background: rgba(255, 255, 255, .25); }
+
+/* Messages */
+.mo-erreur, .mo-succes {
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 600;
+}
+.mo-erreur { background: #fbe7e3; color: #b3382b; }
+.mo-succes { background: #e3f4ee; color: #0d7a5f; }
+.mo-vide {
+  margin: 0; padding: 48px 20px; text-align: center;
+  border: 1px dashed #e7eaf0; border-radius: 16px; color: #8495ae; font-size: 13.5px;
+}
+
+/* Cartes de contenu */
+.mo-liste { display: grid; gap: 12px; }
+.mo-carte {
+  border: 1px solid #e7eaf0; border-radius: 16px; background: #fff; padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 11px;
+  box-shadow: 0 1px 2px rgba(13, 21, 36, .04), 0 8px 24px -14px rgba(13, 21, 36, .16);
+}
+.mo-carte.masque { background: #fbfcfd; border-style: dashed; }
+.mo-carte.masque .mo-texte { color: #8495ae; }
+
+.mo-carte > header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mo-qui { flex: 1; min-width: 0; }
+.mo-qui b { display: block; font-size: 14px; color: #0d1524; }
+.mo-qui small { display: block; margin-top: 2px; font-size: 12.5px; color: #647794; }
+
+.mo-note-etoiles { color: #f0b429; font-size: 14px; letter-spacing: 1px; white-space: nowrap; }
+.mo-note-etoiles i { color: #e0e5ec; font-style: normal; }
+
+.mo-badge {
+  padding: 4px 10px; border-radius: 999px; background: #f2f4f7; color: #647794;
+  font-size: 11px; font-weight: 800; white-space: nowrap;
+}
+
+.mo-texte { margin: 0; font-size: 14px; line-height: 1.6; color: #2a1f1c; }
+.mo-texte em { color: #8495ae; }
+.mo-reponse {
+  margin: 0; padding: 11px 14px; border-radius: 10px; background: #f6f8fa;
+  font-size: 13px; line-height: 1.55; color: #414d63;
+}
+.mo-reponse b { color: #0d1524; }
+.mo-attente { margin: 0; font-size: 12.5px; color: #cf9412; font-weight: 600; }
+
+.mo-carte > footer { display: flex; justify-content: flex-end; }
+.mo-carte footer button {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border: 0; border-radius: 999px;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: .15s;
+}
+.mo-carte footer button:disabled { opacity: .55; cursor: not-allowed; }
+.mo-masquer { background: #fbe7e3; color: #b3382b; }
+.mo-masquer:hover:not(:disabled) { background: #f7d5cf; }
+.mo-afficher { background: #e3f4ee; color: #0d7a5f; }
+.mo-afficher:hover:not(:disabled) { background: #d2ece3; }
+
+@media (max-width: 640px) {
+  .mo-carte { padding: 16px; }
+  .mo-onglets button { padding: 11px 13px; font-size: 13.5px; }
+}

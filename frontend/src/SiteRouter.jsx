@@ -63,6 +63,7 @@ import AdminSellersPage from "./AdminSellersPage";
 import AdminOverviewPage from "./AdminOverviewPage";
 import AdminUsersPage from "./AdminUsersPage";
 import AdminOperationsPage from "./AdminOperationsPage";
+import AdminModerationPage from "./AdminModerationPage";
 import "./portal-notifications.css";
 
 const products = [
@@ -1372,6 +1373,8 @@ function Dashboard({ type }) {
   if (type === "admin" && pathname === "/admin/users") content = <AdminUsersPage />;
   if (type === "admin" && pathname === "/admin/operations")
     content = <AdminOperationsPage />;
+  if (type === "admin" && pathname === "/admin/moderation")
+    content = <AdminModerationPage />;
   if (type === "admin" && pathname === "/admin/sellers")
     content = <AdminSellersPage />;
   return (
