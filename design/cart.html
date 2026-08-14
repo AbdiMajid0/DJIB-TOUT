@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mon panier — DJIB TOUT</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="crumb"><a href="home.html">Accueil</a><span>›</span><b>Mon panier</b></nav>
+  <h1 style="font-size:28px;margin-bottom:20px">Mon panier <span style="color:var(--ink-400);font-weight:600;font-size:18px">· 3 articles</span></h1>
+</div>
+
+<div class="wrap" style="padding-bottom:60px">
+  <div class="cart-layout">
+
+    <!-- ═══════════ ARTICLES ═══════════ -->
+    <div>
+      <div class="freeship">
+        <span>🚚</span>
+        <span>Plus que <b>1 600 FDJ</b> pour la livraison gratuite</span>
+        <span class="t"><i style="width:68%"></i></span>
+      </div>
+
+      <!-- Groupe vendeur 1 -->
+      <div class="cart-shop">
+        <header>
+          <span>🏬</span> Vendu par <a href="#" style="color:var(--brand-600)">Djib Electronics</a>
+          <small>Livraison estimée : demain</small>
+        </header>
+
+        <div class="citem">
+          <span class="im">📱</span>
+          <div>
+            <h3><a href="product.html">Smartphone 128 Go double SIM, écran 6,7" AMOLED</a></h3>
+            <p class="var">Couleur : Bleu nuit · Stockage : 128 Go</p>
+            <p class="var" style="color:var(--success);font-weight:700">● En stock</p>
+            <div class="links">
+              <button>Supprimer</button>
+              <button>Mettre en favori</button>
+            </div>
+          </div>
+          <div class="right">
+            <div>
+              <span class="now">24 900 FDJ</span><br>
+              <span class="was">38 000 FDJ</span>
+            </div>
+            <div class="qty sm">
+              <button data-step="-1" aria-label="Diminuer">−</button><span>1</span><button data-step="1" aria-label="Augmenter">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="citem">
+          <span class="im">🔌</span>
+          <div>
+            <h3><a href="product.html">Chargeur rapide 33 W USB-C + câble 1 m</a></h3>
+            <p class="var">Couleur : Blanc</p>
+            <p class="var" style="color:var(--accent-600);font-weight:700">● Plus que 3 en stock</p>
+            <div class="links">
+              <button>Supprimer</button>
+              <button>Mettre en favori</button>
+            </div>
+          </div>
+          <div class="right">
+            <div><span class="now">2 400 FDJ</span></div>
+            <div class="qty sm">
+              <button data-step="-1" aria-label="Diminuer">−</button><span>2</span><button data-step="1" aria-label="Augmenter">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Groupe vendeur 2 -->
+      <div class="cart-shop">
+        <header>
+          <span>🏬</span> Vendu par <a href="#" style="color:var(--brand-600)">Café d'Arta</a>
+          <small>Livraison estimée : sous 24 h</small>
+        </header>
+
+        <div class="citem">
+          <span class="im">☕</span>
+          <div>
+            <h3><a href="product.html">Café moulu premium 500 g, torréfaction locale</a></h3>
+            <p class="var">Mouture : Filtre</p>
+            <p class="var" style="color:var(--success);font-weight:700">● En stock</p>
+            <div class="links">
+              <button>Supprimer</button>
+              <button>Mettre en favori</button>
+            </div>
+          </div>
+          <div class="right">
+            <div><span class="now">1 800 FDJ</span></div>
+            <div class="qty sm">
+              <button data-step="-1" aria-label="Diminuer">−</button><span>1</span><button data-step="1" aria-label="Augmenter">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a href="category.html" class="btn btn-ghost">← Continuer mes achats</a>
+    </div>
+
+    <!-- ═══════════ RÉCAPITULATIF ═══════════ -->
+    <aside class="summary">
+      <h2>Récapitulatif</h2>
+
+      <div class="sline"><span>Sous-total (4 articles)</span><b>31 500 FDJ</b></div>
+      <div class="sline"><span>Remise ventes flash</span><b style="color:var(--danger)">−13 100 FDJ</b></div>
+      <div class="sline"><span>Livraison</span><b>1 500 FDJ</b></div>
+
+      <div class="promo">
+        <label class="sr" for="promo">Code promo</label>
+        <input id="promo" placeholder="Code promo">
+        <button class="btn btn-ghost">Appliquer</button>
+      </div>
+
+      <div class="stotal"><span>Total à payer</span><b>33 000 FDJ</b></div>
+      <p style="font-size:12.5px;color:var(--ink-500);margin:6px 0 16px">Ou 3 × 11 000 FDJ sans frais avec Waafi</p>
+
+      <a href="#" class="btn btn-primary btn-lg btn-block">Passer la commande</a>
+
+      <div class="paylogos">
+        <span>Waafi</span><span>D-Money</span><span>Carte</span><span>À la livraison</span>
+      </div>
+
+      <div class="pdp-trust" style="margin-top:18px">
+        <div>🛡️ <span>Paiement sécurisé, achat protégé</span></div>
+        <div>↩️ <span>Retour gratuit sous 14 jours</span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ═══════════ SUGGESTIONS ═══════════ -->
+<section class="flash">
+  <div class="wrap">
+    <div class="head">
+      <div><h2>Souvent achetés ensemble</h2><p>Complétez votre commande.</p></div>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <a href="product.html" class="thumb v3">🛡️</a>
+        <button class="fav" aria-label="Ajouter aux favoris">♡</button>
+        <div class="card-body">
+          <span class="seller">Accessoires DJ</span>
+          <a href="product.html" class="title">Verre trempé + coque antichoc</a>
+          <div class="stars"><b>★★★★☆</b> 4,5 <span>(120)</span></div>
+          <div class="price"><span class="now">900 FDJ</span></div>
+          <button class="add">Ajouter au panier</button>
+        </div>
+      </article>
+      <article class="card">
+        <a href="product.html" class="thumb v2">🎧</a>
+        <button class="fav" aria-label="Ajouter aux favoris">♡</button>
+        <div class="card-body">
+          <span class="seller">Sound Corner</span>
+          <a href="product.html" class="title">Écouteurs sans fil Bluetooth 5.3</a>
+          <div class="stars"><b>★★★★☆</b> 4,2 <span>(37)</span></div>
+          <div class="price"><span class="now">3 100 FDJ</span></div>
+          <button class="add">Ajouter au panier</button>
+        </div>
+      </article>
+      <article class="card">
+        <a href="product.html" class="thumb v5">💾</a>
+        <button class="fav" aria-label="Ajouter aux favoris">♡</button>
+        <div class="card-body">
+          <span class="seller">Djib Electronics</span>
+          <a href="product.html" class="title">Carte microSD 128 Go classe 10</a>
+          <div class="stars"><b>★★★★★</b> 4,6 <span>(210)</span></div>
+          <div class="price"><span class="now">2 200 FDJ</span></div>
+          <button class="add">Ajouter au panier</button>
+        </div>
+      </article>
+      <article class="card">
+        <a href="product.html" class="thumb v4">🚗</a>
+        <button class="fav" aria-label="Ajouter aux favoris">♡</button>
+        <div class="card-body">
+          <span class="seller">Power Djib</span>
+          <a href="product.html" class="title">Support téléphone voiture magnétique</a>
+          <div class="stars"><b>★★★★☆</b> 4,1 <span>(45)</span></div>
+          <div class="price"><span class="now">1 200 FDJ</span></div>
+          <button class="add">Ajouter au panier</button>
+        </div>
+      </article>
+      <article class="card">
+        <a href="product.html" class="thumb">🧃</a>
+        <button class="fav" aria-label="Ajouter aux favoris">♡</button>
+        <div class="card-body">
+          <span class="seller">Café d'Arta</span>
+          <a href="product.html" class="title">Thé vert à la menthe 250 g</a>
+          <div class="stars"><b>★★★★★</b> 4,7 <span>(64)</span></div>
+          <div class="price"><span class="now">750 FDJ</span></div>
+          <button class="add">Ajouter au panier</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<script src="ui.js"></script>
+</body>
+</html>

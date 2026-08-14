@@ -68,7 +68,7 @@ public class ProductService {
             }
         }
 
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, Math.min(size, 60)), sort);
         return productRepository.searchProducts(query, category, brand, sellerId, minPrice, maxPrice, minRating, maxDeliveryDays, inStock, pageable);
     }
 

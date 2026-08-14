@@ -1,0 +1,1 @@
+package com.djibtout.backend.repository;import com.djibtout.backend.entity.*;import org.springframework.data.jpa.repository.JpaRepository;import java.util.*;public interface SellerDocumentRepository extends JpaRepository<SellerDocument,Long>{List<SellerDocument> findByStoreOrderByCreatedAtDesc(SellerStore store);}

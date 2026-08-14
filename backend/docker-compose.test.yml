@@ -1,0 +1,17 @@
+services:
+  postgres-test:
+    image: postgres:17-alpine
+    container_name: djibtout-postgres-test
+    environment:
+      POSTGRES_DB: djibtout_test
+      POSTGRES_USER: djibtout_test
+      POSTGRES_PASSWORD: djibtout_test
+    ports:
+      - "55432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U djibtout_test -d djibtout_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20

@@ -1,0 +1,27 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "C:\\Users\\radwa\\AppData\\Local\\Temp\\claude\\C--Users-radwa-OneDrive-Desktop-DJIB-TOUT\\b01b420b-7c82-4219-8348-763c87b0038d\\scratchpad\\start-backend.cmd",
+      "runtimeArgs": [],
+      "port": 8082
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "frontend"],
+      "port": 3000
+    },
+    {
+      "name": "maquette",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:\\Users\\radwa\\AppData\\Local\\Temp\\claude\\C--Users-radwa-OneDrive-Desktop-DJIB-TOUT\\b01b420b-7c82-4219-8348-763c87b0038d\\scratchpad\\serve.mjs",
+        "C:\\Users\\radwa\\OneDrive\\Desktop\\DJIB TOUT\\design",
+        "4321"
+      ],
+      "port": 4321
+    }
+  ]
+}

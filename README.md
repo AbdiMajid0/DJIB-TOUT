@@ -22,12 +22,14 @@ Le profil `local` est sélectionné par défaut. Il utilise `localhost:5432/djib
 ## Production avec Docker
 
 1. Copier `.env.example` vers `.env`.
-2. Remplacer obligatoirement `POSTGRES_PASSWORD` et `JWT_SECRET`.
+2. Remplacer obligatoirement `SPRING_DATASOURCE_URL`/`SPRING_DATASOURCE_USERNAME`/`SPRING_DATASOURCE_PASSWORD` (base PostgreSQL hébergée sur Supabase) et `JWT_SECRET`.
 3. Configurer les domaines CORS et API.
 4. Configurer le stockage objet S3-compatible avec un bucket privé en écriture et une URL média publique/CDN.
 5. Lancer `docker compose up --build -d`.
 
 Le profil `prod` refuse de démarrer sans les variables de base de données et le secret JWT. Hibernate valide le schéma sans le modifier. Flyway applique les migrations versionnées.
+
+La base de données est hébergée sur Supabase (PostgreSQL managé), pas dans un conteneur local. Pour Docker Compose, utilisez la chaîne de connexion « Session pooler » du dashboard Supabase (Project Settings → Database → Connection string) plutôt que le mode « Transaction pooler », qui n'est pas compatible avec Hibernate.
 
 ## Sécurité
 

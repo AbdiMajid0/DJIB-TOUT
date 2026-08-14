@@ -129,6 +129,7 @@ public class ProductController {
         if (productDetails.getWarrantyMonths() != null) existingProduct.setWarrantyMonths(productDetails.getWarrantyMonths());
         if (productDetails.getDeliveryDays() != null) existingProduct.setDeliveryDays(productDetails.getDeliveryDays());
         if (productDetails.getFlashSaleEndsAt() != null) existingProduct.setFlashSaleEndsAt(productDetails.getFlashSaleEndsAt());
+        existingProduct.setVisible(productDetails.isVisible());
 
         Product updated = productService.saveProduct(existingProduct);
         return ResponseEntity.ok(updated);

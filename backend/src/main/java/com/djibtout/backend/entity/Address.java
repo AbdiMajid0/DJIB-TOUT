@@ -13,6 +13,8 @@ public class Address {
     @Column(nullable = false, length = 80) private String label;
     @Column(nullable = false, length = 500) private String fullAddress;
     @Column(nullable = false, length = 100) private String city;
+    @Column(length = 30) private String phone;
+    @Column(length = 500) private String deliveryInstructions;
     @Column(nullable = false) private boolean isDefault;
     public Long getId() { return id; }
     public User getUser() { return user; }
@@ -25,4 +27,6 @@ public class Address {
     public void setCity(String city) { this.city = city; }
     public boolean isDefault() { return isDefault; }
     public void setDefault(boolean value) { isDefault = value; }
+    public String getPhone(){return phone;} public void setPhone(String value){phone=value;}
+    public String getDeliveryInstructions(){return deliveryInstructions;} public void setDeliveryInstructions(String value){deliveryInstructions=value;}
 }

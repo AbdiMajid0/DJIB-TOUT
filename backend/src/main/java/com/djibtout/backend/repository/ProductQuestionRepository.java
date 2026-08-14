@@ -5,5 +5,6 @@ import java.util.List;
 public interface ProductQuestionRepository extends JpaRepository<ProductQuestion,Long>{
  List<ProductQuestion> findByProductIdOrderByCreatedAtDesc(Long productId);
  List<ProductQuestion> findByProductSellerIdOrderByCreatedAtDesc(Long sellerId);
+ List<ProductQuestion> findByUserIdOrderByCreatedAtDesc(Long userId);
  long countByProductSellerIdAndAnswerIsNull(Long sellerId);
 }

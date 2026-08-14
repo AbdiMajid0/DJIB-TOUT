@@ -1,0 +1,2 @@
+ALTER TABLE addresses ADD COLUMN IF NOT EXISTS phone VARCHAR(30);
+ALTER TABLE addresses ADD COLUMN IF NOT EXISTS delivery_instructions VARCHAR(500);

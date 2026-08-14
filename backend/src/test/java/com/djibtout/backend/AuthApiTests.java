@@ -1,6 +1,6 @@
 package com.djibtout.backend;
 import org.junit.jupiter.api.Test;import org.springframework.beans.factory.annotation.Autowired;import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;import org.springframework.boot.test.context.SpringBootTest;import org.springframework.http.MediaType;import org.springframework.test.web.servlet.MockMvc;import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-@SpringBootTest @AutoConfigureMockMvc class AuthApiTests{
+@SpringBootTest @AutoConfigureMockMvc @org.springframework.test.context.ActiveProfiles("test") class AuthApiTests{
  @Autowired MockMvc mvc;
  @Test void invalidRegistrationReturnsStructuredValidationError()throws Exception{mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\",\"email\":\"invalid\",\"password\":\"short\"}")).andExpect(status().isBadRequest()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.code").value("VALIDATION_ERROR")).andExpect(jsonPath("$.details.email").exists());}
  @Test void invalidRefreshTokenIsRejected()throws Exception{mvc.perform(post("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{\"refreshToken\":\"invalid\"}")).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.message").value("Refresh token invalide."));}

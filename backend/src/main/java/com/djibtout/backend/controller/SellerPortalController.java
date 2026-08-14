@@ -6,6 +6,7 @@ import com.djibtout.backend.service.SellerAccessService;
 import com.djibtout.backend.service.SellerEventService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
@@ -97,7 +98,7 @@ public class SellerPortalController {
         SellerStore store = stores.findBySeller(seller).orElseGet(SellerStore::new);
         store.setSeller(seller); store.setName(input.name().trim()); store.setDescription(input.description());
         store.setLogoUrl(input.logoUrl()); store.setBannerUrl(input.bannerUrl()); store.setPolicies(input.policies());
-        store.setBusinessType(input.businessType());store.setPhone(input.phone());store.setBusinessAddress(input.businessAddress());store.setRegistrationNumber(input.registrationNumber());store.setIdentityDocumentUrl(input.identityDocumentUrl());store.setBusinessDocumentUrl(input.businessDocumentUrl());store.setTermsAccepted(input.termsAccepted());store.setOnboardingSubmitted(input.submitOnboarding() && input.termsAccepted() && input.phone()!=null && !input.phone().isBlank() && input.businessAddress()!=null && !input.businessAddress().isBlank() && input.identityDocumentUrl()!=null && !input.identityDocumentUrl().isBlank());
+        store.setBusinessType(input.businessType());store.setPhone(input.phone());store.setBusinessAddress(input.businessAddress());store.setRegistrationNumber(input.registrationNumber());store.setIdentityDocumentUrl(input.identityDocumentUrl());store.setBusinessDocumentUrl(input.businessDocumentUrl());store.setContactEmail(input.contactEmail());store.setWhatsappNumber(input.whatsappNumber());store.setOpeningHours(input.openingHours());store.setDeliveryPolicy(input.deliveryPolicy());store.setReturnPolicy(input.returnPolicy());store.setTermsAccepted(input.termsAccepted());store.setOnboardingSubmitted(input.submitOnboarding() && input.termsAccepted() && input.phone()!=null && !input.phone().isBlank() && input.businessAddress()!=null && !input.businessAddress().isBlank() && input.identityDocumentUrl()!=null && !input.identityDocumentUrl().isBlank());
         events.audit(seller,"SELLER_STORE_UPDATED","store="+store.getName()+", onboardingSubmitted="+store.isOnboardingSubmitted());
         return ResponseEntity.ok(stores.save(store));
     }
@@ -269,6 +270,6 @@ public class SellerPortalController {
     }
 
     public record StoreInput(@NotBlank @Size(max = 120) String name, @Size(max = 1000) String description,
-                             String logoUrl, String bannerUrl, @Size(max = 1000) String policies,String businessType,String phone,@Size(max=500)String businessAddress,String registrationNumber,String identityDocumentUrl,String businessDocumentUrl,boolean termsAccepted,boolean submitOnboarding) {}
+                             String logoUrl, String bannerUrl, @Size(max = 1000) String policies,String businessType,String phone,@Size(max=500)String businessAddress,String registrationNumber,String identityDocumentUrl,String businessDocumentUrl,@Email String contactEmail,String whatsappNumber,@Size(max=1000)String openingHours,@Size(max=2000)String deliveryPolicy,@Size(max=2000)String returnPolicy,boolean termsAccepted,boolean submitOnboarding) {}
     public record FulfillmentInput(OrderStatus status, String trackingNumber) {}
 }

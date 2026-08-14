@@ -1,25 +1,12 @@
 services:
-  db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-djibtout}
-      POSTGRES_USER: ${POSTGRES_USER:-djibtout}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-    volumes: [pgdata:/var/lib/postgresql/data]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-djibtout} -d ${POSTGRES_DB:-djibtout}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
   backend:
     build: ./backend
     ports: ["8082:8082"]
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-djibtout}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-djibtout}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:?SPRING_DATASOURCE_URL is required (Supabase connection string)}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:?SPRING_DATASOURCE_USERNAME is required}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?SPRING_DATASOURCE_PASSWORD is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-disabled-google-client}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-disabled-google-secret}
@@ -31,8 +18,6 @@ services:
       S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:?S3_PUBLIC_BASE_URL is required}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
       S3_SECRET_KEY: ${S3_SECRET_KEY:?S3_SECRET_KEY is required}
-    depends_on:
-      db: {condition: service_healthy}
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8082/actuator/health/readiness"]
       interval: 30s
@@ -42,22 +27,15 @@ services:
     restart: unless-stopped
   frontend:
     build:
-      context: ./frontend
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8082}
-        NEXT_PUBLIC_MONITORING_ENABLED: ${NEXT_PUBLIC_MONITORING_ENABLED:-true}
+      context: .
+      dockerfile: frontend/Dockerfile
     ports: ["3000:3000"]
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8082}
-      NEXT_PUBLIC_MONITORING_ENABLED: ${NEXT_PUBLIC_MONITORING_ENABLED:-true}
     depends_on:
       backend: {condition: service_healthy}
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
       interval: 30s
       timeout: 5s
       start_period: 30s
       retries: 3
     restart: unless-stopped
-volumes:
-  pgdata:

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJIB TOUT — Maquette Home Page</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+      colors: {
+        brand: {
+          50:'#eefdfb',100:'#d3f8f4',200:'#a9f0eb',300:'#70e3de',
+          400:'#31cdcb',500:'#17b0b1',600:'#0f8c90',700:'#116f74',
+          800:'#13595d',900:'#144a4e',950:'#052c31',
+        },
+        ink: {
+          50:'#f6f7f9',100:'#eceef2',200:'#d5dae3',300:'#b0bacb',
+          400:'#8495ae',500:'#647794',600:'#4f5f7a',700:'#414d63',
+          800:'#394253',900:'#0d1524',950:'#060b16',
+        },
+        accent: { 400:'#ffb84d', 500:'#ff9f1c', 600:'#e8850a' },
+      },
+      boxShadow: {
+        soft: '0 1px 2px rgba(13,21,36,.04), 0 8px 24px -8px rgba(13,21,36,.10)',
+        lift: '0 2px 4px rgba(13,21,36,.04), 0 20px 40px -12px rgba(13,21,36,.16)',
+      },
+      borderRadius: { '4xl': '2rem' },
+    }
+  }
+}
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  ::selection { background:#a9f0eb; color:#052c31; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .mesh {
+    background-image:
+      radial-gradient(60% 60% at 12% 20%, rgba(49,205,203,.35) 0%, transparent 60%),
+      radial-gradient(50% 50% at 85% 10%, rgba(255,159,28,.22) 0%, transparent 60%),
+      radial-gradient(55% 55% at 70% 90%, rgba(23,176,177,.28) 0%, transparent 60%);
+  }
+  .grid-lines {
+    background-image: linear-gradient(rgba(13,21,36,.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(13,21,36,.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .float { animation: float 6s ease-in-out infinite; }
+  .float-slow { animation: float 9s ease-in-out infinite; }
+</style>
+</head>
+
+<body class="font-sans bg-white text-ink-900 antialiased">
+
+<!-- ══════════════ TOP STRIP ══════════════ -->
+<div class="hidden md:block bg-ink-900 text-white/80 text-[13px]">
+  <div class="mx-auto max-w-[1400px] px-6 h-10 flex items-center justify-between">
+    <p class="flex items-center gap-2">
+      <span class="h-1.5 w-1.5 rounded-full bg-brand-400"></span>
+      Livraison gratuite à Djibouti-ville dès 5 000 FDJ
+    </p>
+    <nav class="flex items-center gap-6">
+      <a href="#" class="hover:text-white transition">Suivre ma commande</a>
+      <a href="#" class="hover:text-white transition">Devenir vendeur</a>
+      <a href="#" class="hover:text-white transition">Aide</a>
+      <span class="text-white/25">|</span>
+      <button class="hover:text-white transition">FR ▾</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-ink-100">
+  <div class="mx-auto max-w-[1400px] px-4 sm:px-6">
+    <div class="h-[72px] flex items-center gap-4 sm:gap-8">
+
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2.5 shrink-0">
+        <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-700 grid place-items-center shadow-soft">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h16l-1.5 11.5A2 2 0 0 1 16.5 20h-9a2 2 0 0 1-2-1.5L4 7Z"/>
+            <path d="M9 7V5.5a3 3 0 0 1 6 0V7"/>
+          </svg>
+        </div>
+        <div class="leading-none">
+          <div class="text-[19px] font-extrabold tracking-tight">djib<span class="text-brand-500">tout</span></div>
+          <div class="text-[10px] font-medium text-ink-400 tracking-[.18em] uppercase mt-0.5">Marketplace</div>
+        </div>
+      </a>
+
+      <!-- Search -->
+      <div class="hidden md:flex flex-1 max-w-2xl">
+        <div class="group flex w-full items-center rounded-2xl border border-ink-200 bg-ink-50/60 focus-within:bg-white focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100 transition-all">
+          <button class="flex items-center gap-1.5 pl-4 pr-3 py-3 text-sm font-medium text-ink-600 border-r border-ink-200 shrink-0">
+            Tout
+            <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <input type="text" placeholder="Rechercher un produit, une marque, une boutique…"
+                 class="flex-1 bg-transparent px-4 py-3 text-sm placeholder:text-ink-400 outline-none">
+          <button class="m-1.5 rounded-xl bg-ink-900 hover:bg-brand-600 text-white px-4 py-2.5 transition-colors">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" style="height:18px;width:18px" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="ml-auto flex items-center gap-1 sm:gap-2">
+        <button class="md:hidden h-10 w-10 grid place-items-center rounded-xl hover:bg-ink-50 transition">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <a href="#" class="hidden sm:flex items-center gap-2 h-10 px-3 rounded-xl hover:bg-ink-50 transition">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-ink-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+          <span class="hidden lg:block text-[13px] leading-tight text-left">
+            <span class="block text-ink-400 text-[11px]">Bonjour</span>
+            <span class="block font-semibold">Connexion</span>
+          </span>
+        </a>
+        <a href="#" class="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl hover:bg-ink-50 transition relative">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-ink-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1l8.8 8.8 8.8-8.8a5 5 0 0 0 0-7.1Z"/></svg>
+        </a>
+        <a href="#" class="flex items-center gap-2 h-10 pl-3 pr-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white transition shadow-soft">
+          <span class="relative">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2A2 2 0 0 0 9.4 17h8.2a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="10" cy="20" r="1.3" fill="currentColor"/><circle cx="18" cy="20" r="1.3" fill="currentColor"/></svg>
+            <span class="absolute -top-1.5 -right-2 h-4 min-w-4 px-1 rounded-full bg-accent-500 text-[10px] font-bold grid place-items-center">3</span>
+          </span>
+          <span class="hidden lg:block text-[13px] font-semibold">Panier</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Mobile search -->
+    <div class="md:hidden pb-3">
+      <div class="flex items-center rounded-xl border border-ink-200 bg-ink-50/60 px-3">
+        <svg viewBox="0 0 24 24" class="h-4 w-4 text-ink-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="w-full bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-ink-400" placeholder="Rechercher…">
+      </div>
+    </div>
+
+    <!-- Nav row -->
+    <nav class="hidden md:flex items-center gap-1 h-11 -mt-1 text-[13.5px] font-medium text-ink-600 overflow-x-auto no-scrollbar">
+      <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-ink-50 text-ink-900 font-semibold transition">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        Toutes les catégories
+      </button>
+      <span class="h-4 w-px bg-ink-200 mx-2"></span>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Électronique</a>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Mode</a>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Maison</a>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Beauté</a>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Supermarché</a>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Sport</a>
+      <a class="px-3 py-1.5 rounded-lg hover:bg-ink-50 hover:text-ink-900 whitespace-nowrap transition" href="#">Auto</a>
+      <a class="ml-auto px-3 py-1.5 rounded-lg text-accent-600 font-semibold whitespace-nowrap hover:bg-accent-500/10 transition" href="#">🔥 Bons plans</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="relative overflow-hidden bg-ink-50/50">
+  <div class="absolute inset-0 mesh opacity-70"></div>
+  <div class="absolute inset-0 grid-lines opacity-40"></div>
+
+  <div class="relative mx-auto max-w-[1400px] px-4 sm:px-6 py-12 lg:py-20">
+    <div class="grid lg:grid-cols-12 gap-10 items-center">
+
+      <!-- Copy -->
+      <div class="lg:col-span-6">
+        <div class="inline-flex items-center gap-2 rounded-full bg-white border border-ink-200 pl-1.5 pr-4 py-1.5 shadow-soft">
+          <span class="rounded-full bg-brand-500 text-white text-[11px] font-bold px-2.5 py-1">NOUVEAU</span>
+          <span class="text-[13px] font-medium text-ink-600">Paiement mobile D-Money & WAAFI disponible</span>
+        </div>
+
+        <h1 class="mt-6 text-4xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight leading-[1.05]">
+          Tout Djibouti,<br>
+          <span class="relative inline-block">
+            <span class="relative z-10 bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent">dans une boutique.</span>
+            <svg class="absolute -bottom-2 left-0 w-full h-3 text-brand-300/70" viewBox="0 0 300 12" preserveAspectRatio="none"><path d="M2 9c60-6 120-8 180-6s90 4 116 2" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+          </span>
+        </h1>
+
+        <p class="mt-7 text-[17px] leading-relaxed text-ink-500 max-w-lg">
+          Des milliers de produits de vendeurs vérifiés, livrés chez vous en 24 à 48 h.
+          Paiement sécurisé, retours gratuits sous 14 jours.
+        </p>
+
+        <!-- Hero search -->
+        <div class="mt-8 flex items-center rounded-2xl bg-white border border-ink-200 shadow-lift p-1.5 max-w-xl">
+          <svg viewBox="0 0 24 24" class="ml-3 h-5 w-5 text-ink-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input class="flex-1 bg-transparent px-3 py-3 text-[15px] outline-none placeholder:text-ink-400" placeholder="Que cherchez-vous aujourd'hui ?">
+          <button class="rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-semibold px-6 py-3 transition-colors">Chercher</button>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-[13px]">
+          <span class="text-ink-400">Populaire :</span>
+          <a href="#" class="rounded-full bg-white border border-ink-200 px-3 py-1.5 hover:border-brand-400 hover:text-brand-600 transition">iPhone 16</a>
+          <a href="#" class="rounded-full bg-white border border-ink-200 px-3 py-1.5 hover:border-brand-400 hover:text-brand-600 transition">Climatiseur</a>
+          <a href="#" class="rounded-full bg-white border border-ink-200 px-3 py-1.5 hover:border-brand-400 hover:text-brand-600 transition">Abaya</a>
+          <a href="#" class="rounded-full bg-white border border-ink-200 px-3 py-1.5 hover:border-brand-400 hover:text-brand-600 transition">Frigo</a>
+        </div>
+
+        <!-- Stats -->
+        <div class="mt-10 flex items-center gap-8 sm:gap-12">
+          <div>
+            <div class="text-2xl font-extrabold">12 400+</div>
+            <div class="text-[13px] text-ink-400 mt-0.5">Produits</div>
+          </div>
+          <div class="h-9 w-px bg-ink-200"></div>
+          <div>
+            <div class="text-2xl font-extrabold">340+</div>
+            <div class="text-[13px] text-ink-400 mt-0.5">Vendeurs vérifiés</div>
+          </div>
+          <div class="h-9 w-px bg-ink-200"></div>
+          <div>
+            <div class="text-2xl font-extrabold flex items-center gap-1">4,8 <svg viewBox="0 0 24 24" class="h-4 w-4 text-accent-500" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div>
+            <div class="text-[13px] text-ink-400 mt-0.5">9 200 avis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual -->
+      <div class="lg:col-span-6 relative">
+        <div class="relative grid grid-cols-2 gap-4">
+
+          <div class="space-y-4">
+            <div class="float rounded-3xl bg-white p-4 shadow-lift border border-ink-100">
+              <div class="aspect-[4/5] rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 grid place-items-center">
+                <svg viewBox="0 0 24 24" class="h-14 w-14 text-brand-600/50" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18.5h2"/></svg>
+              </div>
+              <div class="mt-3">
+                <p class="text-[13px] font-semibold truncate">Smartphone 256 Go</p>
+                <p class="text-[15px] font-extrabold text-brand-600 mt-0.5">89 900 <span class="text-[11px] font-semibold text-ink-400">FDJ</span></p>
+              </div>
+            </div>
+
+            <div class="rounded-3xl bg-ink-900 text-white p-5 shadow-lift">
+              <div class="flex items-center gap-2 text-brand-300 text-[12px] font-bold tracking-wider uppercase">
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+                Livraison express
+              </div>
+              <p class="mt-2 text-[22px] font-extrabold leading-tight">En 24 h à<br>Djibouti-ville</p>
+            </div>
+          </div>
+
+          <div class="space-y-4 pt-10">
+            <div class="rounded-3xl bg-gradient-to-br from-accent-400 to-accent-600 text-white p-5 shadow-lift">
+              <div class="text-[12px] font-bold tracking-wider uppercase opacity-90">Offre du jour</div>
+              <p class="mt-1.5 text-[34px] font-extrabold leading-none">-45%</p>
+              <p class="mt-2 text-[13px] opacity-95 leading-snug">Sur l'électroménager<br>jusqu'à ce soir</p>
+            </div>
+
+            <div class="float-slow rounded-3xl bg-white p-4 shadow-lift border border-ink-100">
+              <div class="aspect-[4/5] rounded-2xl bg-gradient-to-br from-ink-100 to-ink-200 grid place-items-center">
+                <svg viewBox="0 0 24 24" class="h-14 w-14 text-ink-400" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 8h3l2-3h8l2 3h3v11H3V8Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              </div>
+              <div class="mt-3">
+                <p class="text-[13px] font-semibold truncate">Appareil photo Pro</p>
+                <p class="text-[15px] font-extrabold text-brand-600 mt-0.5">142 000 <span class="text-[11px] font-semibold text-ink-400">FDJ</span></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating badge -->
+          <div class="absolute -left-3 sm:-left-6 top-1/2 rounded-2xl bg-white shadow-lift border border-ink-100 px-4 py-3 flex items-center gap-3">
+            <div class="h-9 w-9 rounded-xl bg-brand-100 grid place-items-center">
+              <svg viewBox="0 0 24 24" class="h-4.5 w-4.5 text-brand-600" style="height:18px;width:18px" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div>
+              <p class="text-[12px] font-bold leading-tight">Paiement sécurisé</p>
+              <p class="text-[11px] text-ink-400">D-Money · WAAFI · CB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CATÉGORIES ══════════════ -->
+<section class="mx-auto max-w-[1400px] px-4 sm:px-6 py-14 lg:py-20">
+  <div class="flex items-end justify-between mb-8">
+    <div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Parcourir par catégorie</h2>
+      <p class="mt-2 text-ink-500">Trouvez exactement ce qu'il vous faut</p>
+    </div>
+    <a href="#" class="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:gap-2.5 transition-all">
+      Tout voir
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+    <!-- 1 -->
+    <a href="#" class="group rounded-3xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="h-14 w-14 rounded-2xl bg-brand-50 grid place-items-center group-hover:bg-brand-500 transition-colors">
+        <svg viewBox="0 0 24 24" class="h-6 w-6 text-brand-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <p class="mt-4 font-semibold text-[15px]">Électronique</p>
+      <p class="text-[13px] text-ink-400 mt-0.5">2 340 produits</p>
+    </a>
+    <!-- 2 -->
+    <a href="#" class="group rounded-3xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="h-14 w-14 rounded-2xl bg-accent-500/10 grid place-items-center group-hover:bg-accent-500 transition-colors">
+        <svg viewBox="0 0 24 24" class="h-6 w-6 text-accent-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 6v4h3v11h10V10h3V6l-4-3-2 2h-4L8 3Z"/></svg>
+      </div>
+      <p class="mt-4 font-semibold text-[15px]">Mode</p>
+      <p class="text-[13px] text-ink-400 mt-0.5">3 120 produits</p>
+    </a>
+    <!-- 3 -->
+    <a href="#" class="group rounded-3xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="h-14 w-14 rounded-2xl bg-brand-50 grid place-items-center group-hover:bg-brand-500 transition-colors">
+        <svg viewBox="0 0 24 24" class="h-6 w-6 text-brand-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+      </div>
+      <p class="mt-4 font-semibold text-[15px]">Maison</p>
+      <p class="text-[13px] text-ink-400 mt-0.5">1 890 produits</p>
+    </a>
+    <!-- 4 -->
+    <a href="#" class="group rounded-3xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="h-14 w-14 rounded-2xl bg-brand-50 grid place-items-center group-hover:bg-brand-500 transition-colors">
+        <svg viewBox="0 0 24 24" class="h-6 w-6 text-brand-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v4a3 3 0 0 1-1 2.2V21H10V9.2A3 3 0 0 1 9 7V3Z"/></svg>
+      </div>
+      <p class="mt-4 font-semibold text-[15px]">Beauté</p>
+      <p class="text-[13px] text-ink-400 mt-0.5">1 450 produits</p>
+    </a>
+    <!-- 5 -->
+    <a href="#" class="group rounded-3xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="h-14 w-14 rounded-2xl bg-accent-500/10 grid place-items-center group-hover:bg-accent-500 transition-colors">
+        <svg viewBox="0 0 24 24" class="h-6 w-6 text-accent-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.4 12.2A2 2 0 0 1 16.6 21H7.4a2 2 0 0 1-2-1.8L4 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+      </div>
+      <p class="mt-4 font-semibold text-[15px]">Supermarché</p>
+      <p class="text-[13px] text-ink-400 mt-0.5">2 780 produits</p>
+    </a>
+    <!-- 6 -->
+    <a href="#" class="group rounded-3xl border border-ink-100 bg-white p-5 hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="h-14 w-14 rounded-2xl bg-brand-50 grid place-items-center group-hover:bg-brand-500 transition-colors">
+        <svg viewBox="0 0 24 24" class="h-6 w-6 text-brand-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3c3 3 3 15 0 18M3 12h18"/></svg>
+      </div>
+      <p class="mt-4 font-semibold text-[15px]">Sport</p>
+      <p class="text-[13px] text-ink-400 mt-0.5">820 produits</p>
+    </a>
+  </div>
+</section>
+
+<!-- ══════════════ FLASH SALE ══════════════ -->
+<section class="relative overflow-hidden bg-ink-900 text-white">
+  <div class="absolute inset-0 opacity-60"
+       style="background-image:radial-gradient(50% 60% at 15% 0%, rgba(23,176,177,.5) 0%, transparent 65%), radial-gradient(45% 55% at 90% 100%, rgba(255,159,28,.35) 0%, transparent 65%)"></div>
+
+  <div class="relative mx-auto max-w-[1400px] px-4 sm:px-6 py-14 lg:py-18">
+
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-9">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full bg-accent-500 text-ink-950 text-[12px] font-extrabold px-3 py-1.5 tracking-wide">
+          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+          VENTE FLASH
+        </div>
+        <h2 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">Prix cassés, stock limité</h2>
+        <p class="mt-2.5 text-white/60">Les meilleures affaires du moment — profitez-en avant la fin</p>
+      </div>
+
+      <!-- Countdown -->
+      <div class="flex items-center gap-3">
+        <span class="text-[13px] text-white/50 font-medium hidden sm:block">Se termine dans</span>
+        <div class="flex items-center gap-1.5">
+          <div class="rounded-xl bg-white/10 backdrop-blur border border-white/10 w-14 py-2 text-center">
+            <div id="cd-h" class="text-xl font-extrabold tabular-nums">05</div>
+            <div class="text-[10px] text-white/50 uppercase tracking-wide">Heures</div>
+          </div>
+          <span class="text-xl font-bold text-white/30">:</span>
+          <div class="rounded-xl bg-white/10 backdrop-blur border border-white/10 w-14 py-2 text-center">
+            <div id="cd-m" class="text-xl font-extrabold tabular-nums">42</div>
+            <div class="text-[10px] text-white/50 uppercase tracking-wide">Min</div>
+          </div>
+          <span class="text-xl font-bold text-white/30">:</span>
+          <div class="rounded-xl bg-white/10 backdrop-blur border border-white/10 w-14 py-2 text-center">
+            <div id="cd-s" class="text-xl font-extrabold tabular-nums text-accent-400">18</div>
+            <div class="text-[10px] text-white/50 uppercase tracking-wide">Sec</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash products -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div class="group rounded-3xl bg-white text-ink-900 p-3 hover:-translate-y-1 transition-transform duration-300">
+        <div class="relative aspect-square rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 grid place-items-center overflow-hidden">
+          <span class="absolute top-3 left-3 rounded-lg bg-accent-500 text-ink-950 text-[11px] font-extrabold px-2 py-1">-45%</span>
+          <svg viewBox="0 0 24 24" class="h-16 w-16 text-brand-600/40" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 6h16v12H4z"/><path d="M4 10h16"/></svg>
+        </div>
+        <div class="p-2.5">
+          <p class="text-[14px] font-semibold leading-snug line-clamp-2">Climatiseur split 12000 BTU</p>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-[17px] font-extrabold text-brand-600">74 500 <span class="text-[11px]">FDJ</span></span>
+            <span class="text-[12px] text-ink-400 line-through">135 000</span>
+          </div>
+          <div class="mt-3">
+            <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden"><div class="h-full w-[78%] rounded-full bg-gradient-to-r from-accent-500 to-accent-400"></div></div>
+            <p class="mt-1.5 text-[11px] font-medium text-ink-400">Plus que <span class="text-accent-600 font-bold">4</span> en stock</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="group rounded-3xl bg-white text-ink-900 p-3 hover:-translate-y-1 transition-transform duration-300">
+        <div class="relative aspect-square rounded-2xl bg-gradient-to-br from-ink-100 to-ink-200 grid place-items-center overflow-hidden">
+          <span class="absolute top-3 left-3 rounded-lg bg-accent-500 text-ink-950 text-[11px] font-extrabold px-2 py-1">-32%</span>
+          <svg viewBox="0 0 24 24" class="h-16 w-16 text-ink-400" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M6 8a6 6 0 1 1 12 0v6a6 6 0 0 1-12 0V8Z"/><path d="M4 12h2M18 12h2"/></svg>
+        </div>
+        <div class="p-2.5">
+          <p class="text-[14px] font-semibold leading-snug line-clamp-2">Casque sans fil ANC Pro</p>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-[17px] font-extrabold text-brand-600">18 900 <span class="text-[11px]">FDJ</span></span>
+            <span class="text-[12px] text-ink-400 line-through">27 800</span>
+          </div>
+          <div class="mt-3">
+            <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden"><div class="h-full w-[45%] rounded-full bg-gradient-to-r from-accent-500 to-accent-400"></div></div>
+            <p class="mt-1.5 text-[11px] font-medium text-ink-400">Plus que <span class="text-accent-600 font-bold">11</span> en stock</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="group rounded-3xl bg-white text-ink-900 p-3 hover:-translate-y-1 transition-transform duration-300">
+        <div class="relative aspect-square rounded-2xl bg-gradient-to-br from-brand-100 to-ink-100 grid place-items-center overflow-hidden">
+          <span class="absolute top-3 left-3 rounded-lg bg-accent-500 text-ink-950 text-[11px] font-extrabold px-2 py-1">-60%</span>
+          <svg viewBox="0 0 24 24" class="h-16 w-16 text-brand-600/40" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3h8l1 5H7l1-5Z"/><path d="M6 8h12v13H6z"/></svg>
+        </div>
+        <div class="p-2.5">
+          <p class="text-[14px] font-semibold leading-snug line-clamp-2">Robot cuiseur multifonction</p>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-[17px] font-extrabold text-brand-600">31 200 <span class="text-[11px]">FDJ</span></span>
+            <span class="text-[12px] text-ink-400 line-through">78 000</span>
+          </div>
+          <div class="mt-3">
+            <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden"><div class="h-full w-[92%] rounded-full bg-gradient-to-r from-accent-500 to-accent-400"></div></div>
+            <p class="mt-1.5 text-[11px] font-medium text-ink-400">Plus que <span class="text-accent-600 font-bold">2</span> en stock</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="group rounded-3xl bg-white text-ink-900 p-3 hover:-translate-y-1 transition-transform duration-300">
+        <div class="relative aspect-square rounded-2xl bg-gradient-to-br from-accent-400/25 to-accent-600/20 grid place-items-center overflow-hidden">
+          <span class="absolute top-3 left-3 rounded-lg bg-accent-500 text-ink-950 text-[11px] font-extrabold px-2 py-1">-28%</span>
+          <svg viewBox="0 0 24 24" class="h-16 w-16 text-accent-600/50" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 18 8 6h8l4 12"/><path d="M7 18h10"/></svg>
+        </div>
+        <div class="p-2.5">
+          <p class="text-[14px] font-semibold leading-snug line-clamp-2">Baskets running homme</p>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-[17px] font-extrabold text-brand-600">9 400 <span class="text-[11px]">FDJ</span></span>
+            <span class="text-[12px] text-ink-400 line-through">13 000</span>
+          </div>
+          <div class="mt-3">
+            <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden"><div class="h-full w-[60%] rounded-full bg-gradient-to-r from-accent-500 to-accent-400"></div></div>
+            <p class="mt-1.5 text-[11px] font-medium text-ink-400">Plus que <span class="text-accent-600 font-bold">8</span> en stock</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PRODUITS POPULAIRES ══════════════ -->
+<section class="mx-auto max-w-[1400px] px-4 sm:px-6 py-14 lg:py-20">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
+    <div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Les plus populaires</h2>
+      <p class="mt-2 text-ink-500">Ce que les Djiboutiens achètent en ce moment</p>
+    </div>
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <button class="rounded-full bg-ink-900 text-white text-[13px] font-semibold px-4 py-2 whitespace-nowrap">Tous</button>
+      <button class="rounded-full border border-ink-200 text-ink-600 hover:border-ink-900 hover:text-ink-900 text-[13px] font-medium px-4 py-2 whitespace-nowrap transition">Électronique</button>
+      <button class="rounded-full border border-ink-200 text-ink-600 hover:border-ink-900 hover:text-ink-900 text-[13px] font-medium px-4 py-2 whitespace-nowrap transition">Mode</button>
+      <button class="rounded-full border border-ink-200 text-ink-600 hover:border-ink-900 hover:text-ink-900 text-[13px] font-medium px-4 py-2 whitespace-nowrap transition">Maison</button>
+    </div>
+  </div>
+
+  <div id="grid-produits" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+
+  <div class="mt-10 text-center">
+    <button class="rounded-2xl border-2 border-ink-900 text-ink-900 hover:bg-ink-900 hover:text-white font-semibold text-[15px] px-8 py-3.5 transition-colors">
+      Voir plus de produits
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════ BANNIÈRE DOUBLE ══════════════ -->
+<section class="mx-auto max-w-[1400px] px-4 sm:px-6 pb-14 lg:pb-20">
+  <div class="grid md:grid-cols-2 gap-5">
+
+    <div class="relative overflow-hidden rounded-4xl bg-gradient-to-br from-brand-600 to-brand-800 text-white p-8 sm:p-10 min-h-[240px] flex flex-col justify-between">
+      <div class="absolute -right-10 -bottom-10 h-52 w-52 rounded-full bg-white/10"></div>
+      <div class="absolute right-16 -top-12 h-32 w-32 rounded-full bg-white/5"></div>
+      <div class="relative">
+        <span class="text-[12px] font-bold tracking-[.15em] uppercase text-brand-200">Nouveau sur djibtout</span>
+        <h3 class="mt-3 text-[28px] sm:text-[32px] font-extrabold leading-tight max-w-xs">Vendez vos produits en ligne</h3>
+        <p class="mt-3 text-white/70 text-[15px] max-w-sm">Créez votre boutique gratuitement et touchez des milliers de clients.</p>
+      </div>
+      <a href="#" class="relative mt-6 inline-flex w-fit items-center gap-2 rounded-2xl bg-white text-brand-700 font-semibold text-[14px] px-6 py-3 hover:gap-3 transition-all">
+        Devenir vendeur
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="relative overflow-hidden rounded-4xl bg-ink-50 border border-ink-100 p-8 sm:p-10 min-h-[240px] flex flex-col justify-between">
+      <div class="absolute -right-8 -bottom-8 h-44 w-44 rounded-full bg-accent-500/10"></div>
+      <div class="relative">
+        <span class="text-[12px] font-bold tracking-[.15em] uppercase text-accent-600">Application mobile</span>
+        <h3 class="mt-3 text-[28px] sm:text-[32px] font-extrabold leading-tight max-w-xs">-10% sur votre 1<sup>re</sup> commande via l'app</h3>
+        <p class="mt-3 text-ink-500 text-[15px] max-w-sm">Commandez plus vite, suivez vos livraisons en direct.</p>
+      </div>
+      <div class="relative mt-6 flex gap-3">
+        <a href="#" class="inline-flex items-center gap-2 rounded-2xl bg-ink-900 text-white font-semibold text-[14px] px-5 py-3 hover:bg-ink-800 transition">App Store</a>
+        <a href="#" class="inline-flex items-center gap-2 rounded-2xl bg-white border border-ink-200 text-ink-900 font-semibold text-[14px] px-5 py-3 hover:border-ink-900 transition">Google Play</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CONFIANCE ══════════════ -->
+<section class="border-y border-ink-100 bg-ink-50/50">
+  <div class="mx-auto max-w-[1400px] px-4 sm:px-6 py-12">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+
+      <div class="flex items-start gap-4">
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-white border border-ink-100 grid place-items-center shadow-soft">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h11v9H2z"/><path d="M13 10h4l3 3v3h-7"/><circle cx="6" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
+        </div>
+        <div>
+          <p class="font-bold text-[15px]">Livraison 24–48 h</p>
+          <p class="mt-1 text-[13.5px] text-ink-500 leading-relaxed">Partout à Djibouti, gratuite dès 5 000 FDJ.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-white border border-ink-100 grid place-items-center shadow-soft">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <div>
+          <p class="font-bold text-[15px]">Paiement sécurisé</p>
+          <p class="mt-1 text-[13.5px] text-ink-500 leading-relaxed">D-Money, WAAFI, carte ou à la livraison.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-white border border-ink-100 grid place-items-center shadow-soft">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+        </div>
+        <div>
+          <p class="font-bold text-[15px]">Retours 14 jours</p>
+          <p class="mt-1 text-[13.5px] text-ink-500 leading-relaxed">Pas satisfait ? On reprend, sans frais.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-white border border-ink-100 grid place-items-center shadow-soft">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M4 13v4a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z"/><path d="M20 13v4a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z"/></svg>
+        </div>
+        <div>
+          <p class="font-bold text-[15px]">Support 7j/7</p>
+          <p class="mt-1 text-[13.5px] text-ink-500 leading-relaxed">Une équipe locale joignable de 8h à 22h.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ AVIS ══════════════ -->
+<section class="mx-auto max-w-[1400px] px-4 sm:px-6 py-14 lg:py-20">
+  <div class="text-center max-w-2xl mx-auto">
+    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Ils nous font confiance</h2>
+    <p class="mt-3 text-ink-500">Plus de 9 200 avis clients avec une note moyenne de 4,8/5</p>
+  </div>
+
+  <div class="mt-10 grid md:grid-cols-3 gap-5">
+
+    <figure class="rounded-3xl border border-ink-100 bg-white p-7 hover:shadow-lift transition-shadow">
+      <div class="flex gap-0.5 text-accent-500">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+      </div>
+      <blockquote class="mt-4 text-[15px] leading-relaxed text-ink-700">« Commandé lundi, reçu mardi matin. L'emballage était nickel et le prix bien plus bas qu'en boutique. »</blockquote>
+      <figcaption class="mt-6 flex items-center gap-3">
+        <div class="h-10 w-10 rounded-full bg-brand-100 text-brand-700 font-bold grid place-items-center text-[13px]">AH</div>
+        <div>
+          <p class="text-[14px] font-semibold">Amina H.</p>
+          <p class="text-[12.5px] text-ink-400">Balbala · Client vérifié</p>
+        </div>
+      </figcaption>
+    </figure>
+
+    <figure class="rounded-3xl border border-ink-100 bg-white p-7 hover:shadow-lift transition-shadow">
+      <div class="flex gap-0.5 text-accent-500">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+      </div>
+      <blockquote class="mt-4 text-[15px] leading-relaxed text-ink-700">« Le paiement par D-Money change tout. Plus besoin de cash, et le suivi de commande est clair. »</blockquote>
+      <figcaption class="mt-6 flex items-center gap-3">
+        <div class="h-10 w-10 rounded-full bg-accent-500/15 text-accent-600 font-bold grid place-items-center text-[13px]">MO</div>
+        <div>
+          <p class="text-[14px] font-semibold">Mohamed O.</p>
+          <p class="text-[12.5px] text-ink-400">Héron · Client vérifié</p>
+        </div>
+      </figcaption>
+    </figure>
+
+    <figure class="rounded-3xl border border-ink-100 bg-white p-7 hover:shadow-lift transition-shadow">
+      <div class="flex gap-0.5 text-accent-500">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24" class="h-4 w-4 text-ink-200" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+      </div>
+      <blockquote class="mt-4 text-[15px] leading-relaxed text-ink-700">« J'ai ouvert ma boutique en 15 minutes. Les premières ventes sont arrivées la même semaine. »</blockquote>
+      <figcaption class="mt-6 flex items-center gap-3">
+        <div class="h-10 w-10 rounded-full bg-ink-100 text-ink-700 font-bold grid place-items-center text-[13px]">FA</div>
+        <div>
+          <p class="text-[14px] font-semibold">Fatouma A.</p>
+          <p class="text-[12.5px] text-ink-400">Vendeuse · Mode</p>
+        </div>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ══════════════ NEWSLETTER ══════════════ -->
+<section class="mx-auto max-w-[1400px] px-4 sm:px-6 pb-16">
+  <div class="relative overflow-hidden rounded-4xl bg-ink-900 text-white px-6 sm:px-12 py-12 sm:py-14">
+    <div class="absolute inset-0 opacity-70"
+         style="background-image:radial-gradient(45% 70% at 100% 0%, rgba(23,176,177,.45) 0%, transparent 60%), radial-gradient(40% 60% at 0% 100%, rgba(255,159,28,.28) 0%, transparent 60%)"></div>
+
+    <div class="relative grid lg:grid-cols-2 gap-8 items-center">
+      <div>
+        <h2 class="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-tight">Ne ratez plus aucune promo</h2>
+        <p class="mt-3 text-white/60 text-[15px] max-w-md">Recevez les ventes flash et les nouveautés chaque semaine. Désinscription en un clic.</p>
+      </div>
+      <div>
+        <form class="flex flex-col sm:flex-row gap-3" onsubmit="return false">
+          <input type="email" placeholder="votre@email.com" required
+                 class="flex-1 rounded-2xl bg-white/10 border border-white/15 backdrop-blur px-5 py-3.5 text-[15px] placeholder:text-white/40 outline-none focus:border-brand-400 focus:bg-white/15 transition">
+          <button class="rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-semibold text-[15px] px-7 py-3.5 transition-colors whitespace-nowrap">S'inscrire</button>
+        </form>
+        <p class="mt-3 text-[12.5px] text-white/40">En vous inscrivant, vous acceptez notre politique de confidentialité.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="border-t border-ink-100 bg-white">
+  <div class="mx-auto max-w-[1400px] px-4 sm:px-6 py-14">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+
+      <div class="lg:col-span-2">
+        <a href="#" class="flex items-center gap-2.5 w-fit">
+          <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-700 grid place-items-center">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 11.5A2 2 0 0 1 16.5 20h-9a2 2 0 0 1-2-1.5L4 7Z"/><path d="M9 7V5.5a3 3 0 0 1 6 0V7"/></svg>
+          </div>
+          <span class="text-[19px] font-extrabold tracking-tight">djib<span class="text-brand-500">tout</span></span>
+        </a>
+        <p class="mt-5 text-[14px] leading-relaxed text-ink-500 max-w-sm">
+          La marketplace djiboutienne qui connecte les vendeurs locaux à leurs clients. Des milliers de produits, livrés vite et bien.
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <a href="#" aria-label="Facebook" class="h-10 w-10 rounded-xl border border-ink-200 grid place-items-center text-ink-500 hover:border-brand-400 hover:text-brand-600 transition">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" style="height:18px;width:18px" fill="currentColor"><path d="M14 9V7.5c0-.8.2-1.2 1.4-1.2H17V3.2C16.6 3.1 15.5 3 14.3 3 11.7 3 10 4.6 10 7.2V9H7.5v3.4H10V21h4v-8.6h2.6l.4-3.4H14Z"/></svg>
+          </a>
+          <a href="#" aria-label="Instagram" class="h-10 w-10 rounded-xl border border-ink-200 grid place-items-center text-ink-500 hover:border-brand-400 hover:text-brand-600 transition">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" style="height:18px;width:18px" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="#" aria-label="WhatsApp" class="h-10 w-10 rounded-xl border border-ink-200 grid place-items-center text-ink-500 hover:border-brand-400 hover:text-brand-600 transition">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" style="height:18px;width:18px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.2-5.5A8.4 8.4 0 1 1 21 11.5Z"/></svg>
+          </a>
+          <a href="#" aria-label="TikTok" class="h-10 w-10 rounded-xl border border-ink-200 grid place-items-center text-ink-500 hover:border-brand-400 hover:text-brand-600 transition">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" style="height:18px;width:18px" fill="currentColor"><path d="M16 3c.4 2.1 1.8 3.6 4 3.9v3c-1.5.1-2.9-.3-4.2-1.1v6.3c0 3.5-2.6 6-5.9 5.9-3-.1-5.4-2.6-5.4-5.6 0-3.3 2.9-6 6.4-5.4v3.1c-1.7-.5-3.2.5-3.2 2.2 0 1.4 1.1 2.5 2.5 2.5s2.4-1 2.4-2.6V3H16Z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-[13px] font-bold uppercase tracking-wider text-ink-900">Acheter</h4>
+        <ul class="mt-4 space-y-2.5 text-[14px] text-ink-500">
+          <li><a href="#" class="hover:text-brand-600 transition">Toutes les catégories</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Bons plans</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Nouveautés</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Meilleures ventes</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Cartes cadeaux</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-[13px] font-bold uppercase tracking-wider text-ink-900">Aide</h4>
+        <ul class="mt-4 space-y-2.5 text-[14px] text-ink-500">
+          <li><a href="#" class="hover:text-brand-600 transition">Suivre ma commande</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Livraison</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Retours & remboursements</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Moyens de paiement</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Nous contacter</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-[13px] font-bold uppercase tracking-wider text-ink-900">DJIB TOUT</h4>
+        <ul class="mt-4 space-y-2.5 text-[14px] text-ink-500">
+          <li><a href="#" class="hover:text-brand-600 transition">À propos</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Devenir vendeur</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Carrières</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Conditions générales</a></li>
+          <li><a href="#" class="hover:text-brand-600 transition">Confidentialité</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 pt-7 border-t border-ink-100 flex flex-col sm:flex-row items-center justify-between gap-5">
+      <p class="text-[13px] text-ink-400">© 2026 DJIB TOUT. Tous droits réservés.</p>
+      <div class="flex items-center gap-2.5">
+        <span class="text-[12px] text-ink-400 mr-1">Paiements :</span>
+        <span class="h-8 px-3 rounded-lg border border-ink-200 grid place-items-center text-[11px] font-bold text-ink-600">D-MONEY</span>
+        <span class="h-8 px-3 rounded-lg border border-ink-200 grid place-items-center text-[11px] font-bold text-ink-600">WAAFI</span>
+        <span class="h-8 px-3 rounded-lg border border-ink-200 grid place-items-center text-[11px] font-bold text-ink-600">VISA</span>
+        <span class="h-8 px-3 rounded-lg border border-ink-200 grid place-items-center text-[11px] font-bold text-ink-600">MC</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── Compte à rebours vente flash ── */
+(function(){
+  let t = 5*3600 + 42*60 + 18;
+  const h = document.getElementById('cd-h'),
+        m = document.getElementById('cd-m'),
+        s = document.getElementById('cd-s');
+  const p = n => String(n).padStart(2,'0');
+  setInterval(() => {
+    if (t <= 0) t = 6*3600;
+    t--;
+    h.textContent = p(Math.floor(t/3600));
+    m.textContent = p(Math.floor(t%3600/60));
+    s.textContent = p(t%60);
+  }, 1000);
+})();
+
+/* ── Grille produits générée ── */
+(function(){
+  const produits = [
+    {nom:"Smartphone 6,7\" 256 Go", prix:"89 900", ancien:"112 000", note:"4,8", avis:342, badge:"Best-seller", tone:"brand"},
+    {nom:"Ventilateur sur pied silencieux", prix:"12 400", ancien:null, note:"4,6", avis:118, badge:null, tone:"ink"},
+    {nom:"Montre connectée AMOLED", prix:"24 700", ancien:"31 000", note:"4,7", avis:205, badge:"-20%", tone:"accent"},
+    {nom:"Sac à main cuir véritable", prix:"16 800", ancien:null, note:"4,9", avis:89, badge:"Nouveau", tone:"brand"},
+    {nom:"Mixeur blender 1200 W", prix:"9 900", ancien:"13 500", note:"4,5", avis:264, badge:null, tone:"ink"},
+    {nom:"Enceinte Bluetooth étanche", prix:"14 200", ancien:null, note:"4,7", avis:171, badge:null, tone:"brand"},
+    {nom:"Parfum oriental 100 ml", prix:"7 500", ancien:"9 800", note:"4,8", avis:412, badge:"-23%", tone:"accent"},
+    {nom:"Chaise de bureau ergonomique", prix:"34 900", ancien:null, note:"4,6", avis:76, badge:null, tone:"ink"},
+    {nom:"Tapis salon 200×290 cm", prix:"22 000", ancien:"28 000", note:"4,4", avis:53, badge:null, tone:"brand"},
+    {nom:"Kit outils 108 pièces", prix:"11 300", ancien:null, note:"4,7", avis:143, badge:"Best-seller", tone:"ink"},
+  ];
+
+  const tones = {
+    brand:  "from-brand-100 to-brand-200 text-brand-600/40",
+    ink:    "from-ink-100 to-ink-200 text-ink-400",
+    accent: "from-accent-400/25 to-accent-600/20 text-accent-600/45",
+  };
+
+  const star = '<svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>';
+
+  document.getElementById('grid-produits').innerHTML = produits.map(p => `
+    <article class="group rounded-3xl border border-ink-100 bg-white overflow-hidden hover:border-brand-300 hover:shadow-lift transition-all duration-300">
+      <div class="relative aspect-square bg-gradient-to-br ${tones[p.tone]} grid place-items-center">
+        ${p.badge ? `<span class="absolute top-3 left-3 z-10 rounded-lg ${p.badge.startsWith('-') ? 'bg-accent-500 text-ink-950' : 'bg-ink-900 text-white'} text-[11px] font-bold px-2 py-1">${p.badge}</span>` : ''}
+        <button class="absolute top-2.5 right-2.5 z-10 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-ink-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all" aria-label="Ajouter aux favoris">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1l8.8 8.8 8.8-8.8a5 5 0 0 0 0-7.1Z"/></svg>
+        </button>
+        <svg viewBox="0 0 24 24" class="h-16 w-16" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m6 16 4-4 3 3 2-2 3 3"/><circle cx="9" cy="9.5" r="1.3"/></svg>
+        <div class="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+          <button class="w-full rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-[13px] font-semibold py-2.5 transition-colors">Ajouter au panier</button>
+        </div>
+      </div>
+      <div class="p-4">
+        <p class="text-[14px] font-semibold leading-snug min-h-[40px]">${p.nom}</p>
+        <div class="mt-2 flex items-center gap-1.5 text-accent-500">
+          ${star}
+          <span class="text-[12.5px] font-semibold text-ink-700">${p.note}</span>
+          <span class="text-[12.5px] text-ink-400">(${p.avis})</span>
+        </div>
+        <div class="mt-2.5 flex items-baseline gap-2">
+          <span class="text-[17px] font-extrabold">${p.prix} <span class="text-[11px] font-semibold text-ink-400">FDJ</span></span>
+          ${p.ancien ? `<span class="text-[12.5px] text-ink-400 line-through">${p.ancien}</span>` : ''}
+        </div>
+        <p class="mt-2 text-[12px] text-brand-600 font-medium flex items-center gap-1">
+          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h11v9H2z"/><path d="M13 10h4l3 3v3h-7"/></svg>
+          Livraison en 24 h
+        </p>
+      </div>
+    </article>
+  `).join('');
+})();
+</script>
+
+</body>
+</html>

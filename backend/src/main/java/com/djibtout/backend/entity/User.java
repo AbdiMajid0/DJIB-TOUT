@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -37,6 +38,9 @@ public class User {
     @Column(unique = true) private String passwordResetToken;
     private LocalDateTime passwordResetExpiresAt;
     @Column(length=30) private String phone;
+    private LocalDate birthDate;
+    @Column(length=5) private String preferredLanguage="fr";
+    @Column(length=500) private String deliveryInstructions;
     private Boolean orderNotifications=true;
     private Boolean promotionNotifications=false;
     private Boolean accountDeleted=false;
@@ -131,4 +135,7 @@ public class User {
     public LocalDateTime getPasswordResetExpiresAt(){return passwordResetExpiresAt;} public void setPasswordResetExpiresAt(LocalDateTime v){passwordResetExpiresAt=v;}
     public String getPhone(){return phone;} public void setPhone(String v){phone=v;} public boolean isOrderNotifications(){return !Boolean.FALSE.equals(orderNotifications);} public void setOrderNotifications(boolean v){orderNotifications=v;} public boolean isPromotionNotifications(){return Boolean.TRUE.equals(promotionNotifications);} public void setPromotionNotifications(boolean v){promotionNotifications=v;} public boolean isAccountDeleted(){return Boolean.TRUE.equals(accountDeleted);} public void setAccountDeleted(boolean v){accountDeleted=v;}
     public boolean isSuspended(){return Boolean.TRUE.equals(suspended);} public void setSuspended(boolean value){suspended=value;}
+    public LocalDate getBirthDate(){return birthDate;} public void setBirthDate(LocalDate value){birthDate=value;}
+    public String getPreferredLanguage(){return preferredLanguage==null?"fr":preferredLanguage;} public void setPreferredLanguage(String value){preferredLanguage=value;}
+    public String getDeliveryInstructions(){return deliveryInstructions;} public void setDeliveryInstructions(String value){deliveryInstructions=value;}
 }
