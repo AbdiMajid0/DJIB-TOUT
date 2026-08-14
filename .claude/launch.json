@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "backend",
-      "runtimeExecutable": "C:\\Users\\radwa\\AppData\\Local\\Temp\\claude\\C--Users-radwa-OneDrive-Desktop-DJIB-TOUT\\b01b420b-7c82-4219-8348-763c87b0038d\\scratchpad\\start-backend.cmd",
+      "runtimeExecutable": "C:\\Users\\radwa\\OneDrive\\Desktop\\DJIB TOUT\\backend\\start-supabase.cmd",
       "runtimeArgs": [],
       "port": 8082
     },
