@@ -34,9 +34,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider = AuthProvider.LOCAL;
     private Boolean emailVerified = false;
-    @Column(unique = true) private String emailVerificationToken;
-    @Column(unique = true) private String passwordResetToken;
-    private LocalDateTime passwordResetExpiresAt;
+    // Jamais serialises : GET /api/admin/users renvoie l'entite complete, et un
+    // passwordResetToken suffit a prendre le controle d'un compte. Ils sont lus
+    // depuis le corps de requete, jamais recus en JSON : masquer ne casse rien.
+    @JsonIgnore @Column(unique = true) private String emailVerificationToken;
+    @JsonIgnore @Column(unique = true) private String passwordResetToken;
+    @JsonIgnore private LocalDateTime passwordResetExpiresAt;
     @Column(length=30) private String phone;
     private LocalDate birthDate;
     @Column(length=5) private String preferredLanguage="fr";
