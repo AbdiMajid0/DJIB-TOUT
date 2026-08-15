@@ -1,4 +1,5 @@
 import React from "react";
+import "./pages-info.css";
 import {
   BrowserRouter,
   Link,
@@ -95,6 +96,16 @@ const products = [
   ["☕", "Café moulu premium 500 g", "Café d'Arta", "1 800 FDJ", "4,8"],
   ["🪑", "Chaise de bureau ergonomique", "Maison & Co", "18 500 FDJ", "4,2"],
 ];
+// Tarifs de livraison. Source de verite : OrderController.createOrder, qui les
+// recalcule a chaque commande — ces valeurs ne servent qu'a l'affichage et
+// doivent rester alignees. Elles etaient recopiees a six endroits, et le
+// bandeau d'en-tete avait derive : il annoncait 5 000 FDJ la ou le seuil reel
+// est de 50 000, soit un facteur dix au detriment du client.
+const LIVRAISON = { seuilGratuit: 50000, standard: 1500, express: 3000 };
+// Coordonnee publique, volontairement en un seul endroit : la remplacer par
+// une adresse au nom du domaine ne demandera qu'une ligne.
+const CONTACT = { email: "radwanmouhoumed@gmail.com" };
+
 const sellerNav = [
   [LayoutDashboard, "Tableau de bord", "/seller"],
   [Package, "Produits", "/seller/products"],
@@ -181,7 +192,7 @@ function ShopHeader() {
     <>
       <div className="mini-top">
         <div className="shell">
-          Livraison offerte dès 5 000 FDJ{" "}
+          Livraison offerte dès {money(LIVRAISON.seuilGratuit)}{" "}
           <span>Aide · Devenir vendeur · FR</span>
         </div>
       </div>
@@ -265,9 +276,22 @@ function ShopFooter() {
         </div>
         <div>
           <b>Aide</b>
-          <a>Livraison</a>
-          <a>Nous contacter</a>
+          {/* Ces deux entrees etaient des <a> sans href : elles avaient
+              l'apparence de liens sans en etre un seul. */}
+          <Link to="/livraison">Livraison</Link>
+          <Link to="/contact">Nous contacter</Link>
         </div>
+      </div>
+      {/* Le pied de page n'affichait ni copyright ni mention legale. Pour une
+          place de marche qui encaisse des paiements et collecte des adresses,
+          ces pages doivent etre accessibles depuis chaque ecran. */}
+      <div className="shell footer-legal">
+        <span>© {new Date().getFullYear()} DJIB TOUT</span>
+        <nav>
+          <Link to="/cgv">Conditions générales</Link>
+          <Link to="/confidentialite">Confidentialité</Link>
+          <Link to="/contact">Contact</Link>
+        </nav>
       </div>
     </footer>
   );
@@ -642,7 +666,8 @@ function Cart() {
     (n, x) => n + Number(x.product.price) * x.quantity,
     0,
   );
-  const delivery = subtotal >= 50000 || !cart.length ? 0 : 1500;
+  const delivery =
+    subtotal >= LIVRAISON.seuilGratuit || !cart.length ? 0 : LIVRAISON.standard;
   return (
     <Shop>
       <Crumb current="Panier" />
@@ -666,9 +691,9 @@ function Cart() {
             <section>
               <div className="free-ship">
                 🚚{" "}
-                {subtotal >= 50000
+                {subtotal >= LIVRAISON.seuilGratuit
                   ? "Votre livraison standard est offerte."
-                  : `Plus que ${money(50000 - subtotal)} pour profiter de la livraison gratuite.`}
+                  : `Plus que ${money(LIVRAISON.seuilGratuit - subtotal)} pour profiter de la livraison gratuite.`}
               </div>
               {cart.map(({ product: p, quantity }) => (
                 <article className="cart-row" key={p.id}>
@@ -737,7 +762,12 @@ function Checkout() {
     (n, x) => n + Number(x.product.price) * x.quantity,
     0,
   );
-  const fee = delivery === "EXPRESS" ? 3000 : subtotal >= 50000 ? 0 : 1500;
+  const fee =
+    delivery === "EXPRESS"
+      ? LIVRAISON.express
+      : subtotal >= LIVRAISON.seuilGratuit
+        ? 0
+        : LIVRAISON.standard;
   React.useEffect(() => {
     if (!user) {
       navigate("/login", { replace: true });
@@ -850,7 +880,10 @@ function Checkout() {
                 />
                 <b>Standard</b>
                 <small>
-                  24–48 h · {subtotal >= 50000 ? "Gratuite" : "1 500 FDJ"}
+                  24–48 h ·{" "}
+                  {subtotal >= LIVRAISON.seuilGratuit
+                    ? "Gratuite"
+                    : money(LIVRAISON.standard)}
                 </small>
               </label>
               <label>
@@ -3355,7 +3388,12 @@ function CheckoutV2() {
     (n, x) => n + Number(x.product.price) * x.quantity,
     0,
   );
-  const fee = delivery === "EXPRESS" ? 3000 : subtotal >= 50000 ? 0 : 1500;
+  const fee =
+    delivery === "EXPRESS"
+      ? LIVRAISON.express
+      : subtotal >= LIVRAISON.seuilGratuit
+        ? 0
+        : LIVRAISON.standard;
   React.useEffect(() => {
     api("/addresses")
       .then((x) => {
@@ -3467,9 +3505,11 @@ function CheckoutV2() {
                 [
                   "STANDARD",
                   "Standard",
-                  subtotal >= 50000 ? "Gratuite" : "1 500 FDJ",
+                  subtotal >= LIVRAISON.seuilGratuit
+                    ? "Gratuite"
+                    : money(LIVRAISON.standard),
                 ],
-                ["EXPRESS", "Express", "3 000 FDJ"],
+                ["EXPRESS", "Express", money(LIVRAISON.express)],
               ].map((x) => (
                 <label key={x[0]}>
                   <input
@@ -3580,6 +3620,205 @@ function NotFound() {
     </Shop>
   );
 }
+function PageInfo({ titre, chapo, children }) {
+  return (
+    <Shop>
+      <Crumb current={titre} />
+      <main className="shell page-space page-info">
+        <h1>{titre}</h1>
+        {chapo && <p className="page-info-chapo">{chapo}</p>}
+        {children}
+      </main>
+    </Shop>
+  );
+}
+function PageLivraison() {
+  return (
+    <PageInfo titre="Livraison" chapo="Frais, délais et suivi de vos commandes.">
+      <section>
+        <h2>Frais de livraison</h2>
+        <table className="page-info-table">
+          <tbody>
+            <tr><td>Standard</td><td>{money(LIVRAISON.standard)}</td></tr>
+            <tr><td>Standard, dès {money(LIVRAISON.seuilGratuit)} d’achat</td><td>Offerte</td></tr>
+            <tr><td>Express</td><td>{money(LIVRAISON.express)}</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Les frais sont calculés sur le sous-total de votre panier, avant
+          application d’un éventuel code promotionnel, et affichés avant la
+          validation de la commande.
+        </p>
+      </section>
+      <section>
+        <h2>Suivi</h2>
+        <p>
+          Chaque commande passe par quatre étapes : en attente, en préparation,
+          expédiée, livrée. Vous les suivez depuis <Link to="/orders">Mes
+          commandes</Link>. Lorsque le vendeur expédie votre colis, un numéro de
+          suivi est ajouté à la commande et vous recevez une notification.
+        </p>
+      </section>
+      <section>
+        <h2>Expédition par les boutiques</h2>
+        <p>
+          DJIB TOUT est une place de marché : chaque produit est vendu et
+          expédié par une boutique indépendante. Une commande contenant des
+          articles de plusieurs vendeurs peut donc vous parvenir en plusieurs
+          fois, et n’est marquée livrée qu’une fois tous les colis remis.
+        </p>
+      </section>
+      <section>
+        <h2>Retours</h2>
+        <p>
+          Une demande de retour s’ouvre depuis le détail de la commande, une
+          fois celle-ci livrée. Le vendeur l’accepte ou la refuse en motivant sa
+          décision, et vous êtes notifié à chaque étape.
+        </p>
+      </section>
+    </PageInfo>
+  );
+}
+function PageContact() {
+  return (
+    <PageInfo titre="Nous contacter" chapo="Une question sur une commande, un compte ou une boutique ?">
+      <section>
+        <h2>Par e-mail</h2>
+        <p><a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
+        <p>
+          Indiquez le numéro de votre commande : il figure en haut de son détail
+          dans <Link to="/orders">Mes commandes</Link>. Cela nous évite un
+          aller-retour.
+        </p>
+      </section>
+      <section>
+        <h2>Un problème avec un article</h2>
+        <p>
+          Pour un produit non conforme ou endommagé, ouvrez directement une
+          demande de retour depuis le détail de la commande : elle part au
+          vendeur, seul habilité à la traiter.
+        </p>
+      </section>
+      <section>
+        <h2>Vous vendez sur DJIB TOUT</h2>
+        <p>
+          Les questions liées à votre boutique, vos commandes et vos règlements
+          se traitent depuis votre <Link to="/seller">espace vendeur</Link>.
+        </p>
+      </section>
+    </PageInfo>
+  );
+}
+function PageConfidentialite() {
+  return (
+    <PageInfo titre="Confidentialité" chapo="Les données que nous collectons, pourquoi, et ce que vous pouvez en faire.">
+      <section>
+        <h2>Ce que nous collectons</h2>
+        <ul>
+          <li><b>Votre compte</b> : nom, adresse e-mail, mot de passe (jamais stocké en clair), téléphone, date de naissance, langue préférée, préférences de notification.</li>
+          <li><b>Vos adresses</b> : libellé, adresse complète, ville, téléphone et instructions de livraison.</li>
+          <li><b>Vos commandes</b> : articles, montants, adresse retenue, modes de livraison et de paiement.</li>
+          <li><b>Vos paiements</b> : mode utilisé, numéro de téléphone associé, montant et statut. Aucune donnée de carte bancaire n’est stockée.</li>
+          <li><b>Vos contributions</b> : avis, questions, favoris et listes.</li>
+        </ul>
+        <p>
+          Si vous vendez sur la plateforme, nous conservons en outre les
+          informations de votre boutique et les documents justificatifs que vous
+          transmettez. Ces documents ne sont accessibles qu’à vous et à
+          l’administration de la plateforme.
+        </p>
+      </section>
+      <section>
+        <h2>Ce que nous partageons</h2>
+        <p>
+          Lorsqu’une commande est passée, le vendeur concerné reçoit les
+          informations nécessaires à son expédition. Vos coordonnées ne sont
+          transmises à aucun tiers à des fins publicitaires.
+        </p>
+      </section>
+      <section>
+        <h2>Cookies et traceurs</h2>
+        <p>
+          Le site n’utilise ni cookie publicitaire ni mesure d’audience. Votre
+          session est conservée dans le stockage local de votre navigateur, et un
+          cookie technique protège les formulaires contre la falsification de
+          requêtes. Se déconnecter efface ces données.
+        </p>
+      </section>
+      <section>
+        <h2>Vos droits</h2>
+        <p>
+          Depuis votre compte, vous pouvez à tout moment corriger vos
+          informations, exporter l’ensemble de vos données au format JSON, et
+          supprimer votre compte. La suppression anonymise votre profil et met
+          fin à toutes vos sessions.
+        </p>
+      </section>
+      <p className="page-info-note">
+        Cette page décrit fidèlement le fonctionnement actuel du service. Les
+        mentions relatives au responsable de traitement, aux durées de
+        conservation et aux bases légales sont en cours de finalisation. Pour
+        toute question, écrivez-nous à <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+      </p>
+    </PageInfo>
+  );
+}
+function PageConditions() {
+  return (
+    <PageInfo titre="Conditions générales" chapo="Le cadre des achats et des ventes sur DJIB TOUT.">
+      <section>
+        <h2>Une place de marché</h2>
+        <p>
+          DJIB TOUT met en relation des boutiques indépendantes et des
+          acheteurs. Le contrat de vente est conclu entre vous et la boutique :
+          c’est elle qui fixe ses prix, expédie les articles et traite les
+          demandes de retour.
+        </p>
+      </section>
+      <section>
+        <h2>Commandes et prix</h2>
+        <p>
+          Les prix sont affichés en francs de Djibouti (FDJ), toutes taxes
+          comprises. Le montant définitif, frais de livraison inclus, est
+          présenté avant la validation de la commande. Une commande n’est ferme
+          qu’une fois le paiement confirmé, ou, en cas de paiement à la
+          livraison, dès son enregistrement.
+        </p>
+      </section>
+      <section>
+        <h2>Paiement</h2>
+        <p>
+          Les paiements s’effectuent par mobile money, par le portefeuille
+          DjibPay, ou en espèces à la livraison. Aucune donnée de carte
+          bancaire n’est collectée par la plateforme.
+        </p>
+      </section>
+      <section>
+        <h2>Annulation et retours</h2>
+        <p>
+          Vous pouvez annuler une commande tant qu’elle n’a pas été expédiée.
+          Après livraison, une demande de retour peut être ouverte depuis le
+          détail de la commande ; le vendeur y répond en motivant sa décision.
+        </p>
+      </section>
+      <section>
+        <h2>Vos engagements</h2>
+        <p>
+          Vous vous engagez à fournir des informations exactes, à ne pas publier
+          d’avis ou de questions injurieux ou trompeurs, et à ne pas utiliser le
+          service à des fins frauduleuses. Les boutiques s’engagent à décrire
+          fidèlement leurs produits et à respecter les délais annoncés.
+        </p>
+      </section>
+      <p className="page-info-note">
+        Ces conditions décrivent le fonctionnement du service. Les clauses
+        relatives aux garanties, à la responsabilité, au droit applicable et au
+        règlement des litiges sont en cours de finalisation. Pour toute question,
+        écrivez-nous à <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+      </p>
+    </PageInfo>
+  );
+}
 function AppRoutes() {
   return (
     <Routes>
@@ -3609,6 +3848,10 @@ function AppRoutes() {
           </AdminProtected>
         }
       />
+      <Route path="/livraison" element={<PageLivraison />} />
+      <Route path="/contact" element={<PageContact />} />
+      <Route path="/cgv" element={<PageConditions />} />
+      <Route path="/confidentialite" element={<PageConfidentialite />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

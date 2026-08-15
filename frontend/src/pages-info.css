@@ -1,0 +1,30 @@
+/* Pages d'information (livraison, contact, mentions) et barre legale du pied
+   de page. Contenu textuel : largeur de lecture bornee, pas de grille. */
+.page-info { max-width: 760px; }
+.page-info h1 { margin: 0 0 8px; font-size: 30px; }
+.page-info-chapo { margin: 0 0 32px; color: #5b6b66; font-size: 16px; }
+.page-info section { margin-bottom: 32px; }
+.page-info h2 { margin: 0 0 10px; font-size: 18px; }
+.page-info p { margin: 0 0 12px; line-height: 1.65; color: #2b3a35; }
+.page-info ul { margin: 0 0 12px; padding-left: 20px; line-height: 1.65; color: #2b3a35; }
+.page-info li { margin-bottom: 6px; }
+.page-info a { color: #0d6b4f; text-decoration: underline; }
+.page-info-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+.page-info-table td { padding: 10px 0; border-bottom: 1px solid #e4eae8; }
+.page-info-table td:last-child { text-align: right; font-weight: 600; }
+.page-info-note {
+  margin-top: 32px; padding: 14px 16px; border-radius: 10px;
+  background: #f4f7f6; color: #5b6b66; font-size: 14px; line-height: 1.6;
+}
+
+/* Barre legale : le pied de page n'avait ni copyright ni mentions. */
+.footer-legal {
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  margin-top: 28px; padding-top: 20px;
+  display: flex; flex-wrap: wrap; gap: 8px 20px;
+  align-items: center; justify-content: space-between;
+  font-size: 13px; color: rgba(255, 255, 255, .6);
+}
+.footer-legal nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.footer-legal a { color: rgba(255, 255, 255, .6); text-decoration: none; }
+.footer-legal a:hover { color: #fff; text-decoration: underline; }
