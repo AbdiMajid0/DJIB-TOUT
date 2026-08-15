@@ -51,6 +51,7 @@ public class SellerPortalController {
         return user != null && (user.getRole() == Role.SELLER || user.getRole() == Role.ADMIN) ? user : null;
     }
 
+    @Transactional(readOnly = true)
     @GetMapping("/dashboard")
     public ResponseEntity<?> dashboard(Authentication authentication) {
         User seller = seller(authentication);
@@ -80,6 +81,7 @@ public class SellerPortalController {
         }));
     }
 
+    @Transactional(readOnly = true)
     @GetMapping("/analytics")
     public ResponseEntity<?> analytics(Authentication authentication, @RequestParam(defaultValue = "30") int days) {
         User seller=seller(authentication); if(seller==null)return ResponseEntity.status(403).build();
@@ -168,6 +170,7 @@ public class SellerPortalController {
         return ResponseEntity.ok(vue);
     }
 
+    @Transactional(readOnly = true)
     @GetMapping(value="/orders/export", produces="text/csv")
     public ResponseEntity<String> exportOrders(Authentication authentication) {
         User seller=access.ownerForOrders(authentication==null?null:users.findByEmail(authentication.getName()).orElse(null)); if(seller==null)return ResponseEntity.status(403).build();
@@ -178,9 +181,11 @@ public class SellerPortalController {
 
     private String csvEscape(String value){return "\""+(value==null?"":value.replace("\"","\"\""))+"\"";}
 
+    @Transactional(readOnly = true)
     @GetMapping(value="/returns/export", produces="text/csv")
     public ResponseEntity<String> exportReturns(Authentication authentication){User seller=access.ownerForOrders(authentication==null?null:users.findByEmail(authentication.getName()).orElse(null));if(seller==null)return ResponseEntity.status(403).build();StringBuilder csv=new StringBuilder("retour,date,produit,quantite,statut,motif,remboursement\n");for(ReturnRequest r:returnRequests.findBySellerOrderByCreatedAtDesc(seller))csv.append(r.getId()).append(',').append(r.getCreatedAt()).append(',').append(csvEscape(r.getOrderItem().getProduct().getName())).append(',').append(r.getQuantity()).append(',').append(r.getStatus()).append(',').append(csvEscape(r.getReason())).append(',').append(r.getRefundAmount()).append('\n');return csvResponse("retours-djibtout.csv",csv);}
 
+    @Transactional(readOnly = true)
     @GetMapping(value="/analytics/export", produces="text/csv")
     public ResponseEntity<String> exportAnalytics(Authentication authentication,@RequestParam(defaultValue="30")int days){User seller=seller(authentication);if(seller==null)return ResponseEntity.status(403).build();int safe=Math.max(1,Math.min(days,365));LocalDateTime since=LocalDateTime.now().minusDays(safe);StringBuilder csv=new StringBuilder("produit,unites,chiffre_affaires\n");Map<String,Integer> units=new LinkedHashMap<>();Map<String,BigDecimal> revenue=new LinkedHashMap<>();for(Order o:orders.findOrdersBySellerId(seller.getId()))if(o.getCreatedAt()!=null&&o.getCreatedAt().isAfter(since)&&o.getStatus()!=OrderStatus.CANCELLED)for(OrderItem i:o.getItems())if(belongsToSeller(i,seller)){units.merge(i.getProduct().getName(),i.getQuantity(),Integer::sum);revenue.merge(i.getProduct().getName(),i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())),BigDecimal::add);}revenue.forEach((name,value)->csv.append(csvEscape(name)).append(',').append(units.get(name)).append(',').append(value).append('\n'));return csvResponse("statistiques-djibtout.csv",csv);}
 

@@ -235,6 +235,10 @@ public class OrderController {
         return org.springframework.data.domain.PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 50));
     }
 
+    // `open-in-view=false` ferme la session des la sortie du depot : lire une
+    // association paresseuse apres coup levait une LazyInitializationException,
+    // convertie en 500 pour l'appelant.
+    @Transactional(readOnly = true)
     @GetMapping("/seller-orders")
     public ResponseEntity<?> getSellerOrders() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
