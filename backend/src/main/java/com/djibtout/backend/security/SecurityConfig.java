@@ -27,7 +27,10 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000}") private String allowedOrigins;
+    private static final org.slf4j.Logger log=org.slf4j.LoggerFactory.getLogger(SecurityConfig.class);
+    // Troisieme repli localhost du projet, apres application.properties et
+    // docker-compose. On le supprime : la propriete doit etre definie.
+    @Value("${app.cors.allowed-origins}") private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
@@ -65,6 +68,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/telemetry/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                // Seule la sonde de sante est publique : prometheus, metrics et info
+                // retombaient sur anyRequest().authenticated(), donc tout acheteur
+                // connecte pouvait les lire.
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products", "/api/products/**", "/api/catalog/**", "/api/public/**", "/uploads/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/*/interactions").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products", "/api/products/**").hasAnyRole("SELLER","ADMIN")
@@ -105,8 +112,24 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(o -> !o.isEmpty()).toList();
+        if (origins.isEmpty())
+            throw new IllegalStateException("app.cors.allowed-origins est vide : aucun navigateur ne pourra appeler l'API.");
+        for (String origin : origins) {
+            // Avec un en-tete Authorization, '*' revient a ouvrir l'API a tout site.
+            if ("*".equals(origin))
+                throw new IllegalStateException("app.cors.allowed-origins ne peut pas valoir '*' : listez les origines.");
+            if (!origin.startsWith("http://") && !origin.startsWith("https://"))
+                throw new IllegalStateException("Origine CORS invalide, schema http:// ou https:// attendu : " + origin);
+            // Le navigateur envoie une origine nue (schema + hote + port). Spring la
+            // compare caractere par caractere : une barre finale ou un chemin ne
+            // correspond jamais, et le rejet ne laisse aucune trace cote serveur.
+            if (origin.indexOf('/', origin.indexOf("://") + 3) >= 0)
+                throw new IllegalStateException("Origine CORS invalide, ni chemin ni barre finale : " + origin);
+        }
+        log.info("CORS : {} origine(s) autorisee(s) : {}", origins.size(), origins);
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
+        configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-CSRF-TOKEN", "X-XSRF-TOKEN", "Idempotency-Key"));
         configuration.setExposedHeaders(List.of("Location", "Retry-After"));

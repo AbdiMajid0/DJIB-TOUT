@@ -11,7 +11,11 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.List;
 
-@Component
+// Donnees de demonstration : ce composant ne doit jamais s'executer
+// ailleurs qu'en developpement. Sans cette restriction il creait un
+// compte vendeur au mot de passe connu dans toute base vide, production
+// comprise.
+@Component @org.springframework.context.annotation.Profile("local")
 public class DataSeeder implements CommandLineRunner {
 
     private final ProductRepository productRepository;
