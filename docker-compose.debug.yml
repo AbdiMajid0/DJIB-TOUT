@@ -1,0 +1,8 @@
+# Surcouche de diagnostic : republie l'API sur l'hote.
+# A n'utiliser que ponctuellement, jamais sur un environnement expose.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
+#
+services:
+  backend:
+    ports: ["8082:8082"]

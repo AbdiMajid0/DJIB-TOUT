@@ -24,9 +24,6 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:8082
-          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
   backend:
     runs-on: ubuntu-latest
@@ -56,9 +53,9 @@ jobs:
           tags: djibtout/backend:ci
       - uses: docker/build-push-action@v6
         with:
-          context: frontend
+          # frontend/Dockerfile fait `COPY frontend/...` : il attend la racine
+          # du depot comme contexte, pas le sous-repertoire. Le job echouait.
+          context: .
+          file: frontend/Dockerfile
           push: false
           tags: djibtout/frontend:ci
-          build-args: |
-            NEXT_PUBLIC_API_URL=http://localhost:8082
-            NEXT_PUBLIC_MONITORING_ENABLED=false
