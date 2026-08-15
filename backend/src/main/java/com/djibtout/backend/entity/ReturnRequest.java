@@ -1,6 +1,7 @@
 package com.djibtout.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,8 +14,8 @@ import java.util.List;
 public class ReturnRequest {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @ManyToOne(optional = false) @JoinColumn(name = "order_item_id") @JsonIgnoreProperties("order") private OrderItem orderItem;
-    @ManyToOne(optional = false) @JoinColumn(name = "buyer_id") @JsonIgnoreProperties({"password","emailVerificationToken","resetPasswordToken"}) private User buyer;
-    @ManyToOne(optional = false) @JoinColumn(name = "seller_id") @JsonIgnoreProperties({"password","emailVerificationToken","resetPasswordToken"}) private User seller;
+    @ManyToOne(optional = false) @JoinColumn(name = "buyer_id") @JsonIncludeProperties({"id","name"}) private User buyer;
+    @ManyToOne(optional = false) @JoinColumn(name = "seller_id") @JsonIncludeProperties({"id","name"}) private User seller;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 30) private ReturnStatus status = ReturnStatus.REQUESTED;
     @Column(nullable = false) private Integer quantity;
     @Column(nullable = false, length = 120) private String reason;

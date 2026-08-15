@@ -1,10 +1,11 @@
 package com.djibtout.backend.entity;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 @Entity @Table(name="seller_stores")
 public class SellerStore{
  @Id @GeneratedValue(strategy=GenerationType.IDENTITY)private Long id;
  @Version private Long version;
- @OneToOne(optional=false)@JoinColumn(name="seller_id",unique=true)private User seller;
+ @JsonIncludeProperties({"id","name","email","suspended"})@OneToOne(optional=false)@JoinColumn(name="seller_id",unique=true)private User seller;
  @Column(nullable=false,length=120)private String name;
  @Column(length=1000)private String description;
  private String logoUrl,bannerUrl;

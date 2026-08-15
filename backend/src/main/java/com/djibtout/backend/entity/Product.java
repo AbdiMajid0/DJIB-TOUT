@@ -1,6 +1,7 @@
 package com.djibtout.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -52,7 +53,11 @@ public class Product {
     @Column(nullable = false)
     private String category;
 
-    @JsonIgnoreProperties({"password", "role", "hibernateLazyInitializer", "handler"})
+    // Liste blanche et non liste noire : ce graphe est serialise sur des
+    // endpoints publics, et toute colonne ajoutee plus tard a User serait
+    // sinon exposee par defaut. L'ancienne liste noire laissait passer
+    // email, telephone, date de naissance et instructions de livraison.
+    @JsonIncludeProperties({"id", "name"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id")
     private User seller;

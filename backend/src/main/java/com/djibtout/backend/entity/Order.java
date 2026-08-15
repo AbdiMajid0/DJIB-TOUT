@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -22,6 +23,10 @@ public class Order {
     @Version
     private Long version;
 
+    // GET /api/orders/{id} renvoyait l'entite : le vendeur recevait le compte
+    // complet de l'acheteur. Aucun ecran ne lit ce champ — les vues qui ont
+    // besoin du nom le construisent explicitement.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_id", nullable = false)
     private User buyer;
