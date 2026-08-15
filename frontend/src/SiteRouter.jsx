@@ -1142,25 +1142,18 @@ function Auth({ kind = "login" }) {
 function ForgotPassword() {
   const [email, setEmail] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [resetLink, setResetLink] = React.useState("");
   const [error, setError] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
     setError("");
-    setResetLink("");
     try {
       const data = await api("/auth/forgot-password", {
         method: "POST",
         body: JSON.stringify({ email }),
       });
       setMessage(data.message);
-      if (data.developmentResetToken && !data.emailSent)
-        setResetLink(
-          "/reset-password?token=" +
-            encodeURIComponent(data.developmentResetToken),
-        );
     } catch (e) {
       setError(e.message);
     } finally {
@@ -1185,11 +1178,6 @@ function ForgotPassword() {
           <p>Recevez un lien de réinitialisation.</p>
           {error && <div className="api-error">{error}</div>}
           {message && <div className="api-success">{message}</div>}
-          {resetLink && (
-            <Link className="local-reset-link" to={resetLink}>
-              Ouvrir le lien de réinitialisation
-            </Link>
-          )}
           <label className="field">
             <span>Adresse e-mail</span>
             <input

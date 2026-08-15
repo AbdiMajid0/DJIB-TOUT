@@ -43,9 +43,11 @@ class BuyerJourneyIntegrationTests {
         Product product=new Product();product.setName("Produit parcours test");product.setDescription("Produit isolé");product.setPrice(new BigDecimal("10000"));product.setStockQuantity(5);product.setCategory("Tests");product.setSeller(seller);product=products.save(product);
         Coupon coupon=new Coupon();coupon.setCode("FLOW"+suffix.toUpperCase());coupon.setDiscountType(DiscountType.PERCENTAGE);coupon.setDiscountValue(new BigDecimal("10"));coupon.setActive(true);coupons.save(coupon);
 
-        String registration=mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(java.util.Map.of("name","Client test","email",email,"password",password,"role","BUYER"))))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String verificationToken=json.readTree(registration).get("developmentVerificationToken").asText();
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(java.util.Map.of("name","Client test","email",email,"password",password,"role","BUYER"))))
+                .andExpect(status().isOk());
+        // Le jeton de verification n'est plus renvoye par l'API : le parcours le relit
+        // en base, comme le ferait le destinataire de l'e-mail.
+        String verificationToken=users.findByEmail(email).orElseThrow().getEmailVerificationToken();
         mvc.perform(post("/api/auth/verify-email").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(java.util.Map.of("token",verificationToken))))
                 .andExpect(status().isOk());
 

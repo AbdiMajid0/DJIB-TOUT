@@ -132,4 +132,34 @@ class AuthControllerTests{
   verify(encoder,never()).encode(anyString());
   verify(users,never()).save(any());
  }
+
+ // --- Non-regression SEC-01 / SEC-02 / SEC-03 / SEC-06 ---
+
+ @Test void forgotPasswordRepondIdentiquementQueLeCompteExisteOuNon(){
+  when(users.findByEmail("connu@test.local")).thenReturn(Optional.of(new User()));
+  when(users.findByEmail("inconnu@test.local")).thenReturn(Optional.empty());
+  ResponseEntity<?> existant=controller.forgot(Map.of("email","connu@test.local"));
+  ResponseEntity<?> inconnu=controller.forgot(Map.of("email","inconnu@test.local"));
+  assertEquals(inconnu.getStatusCode(),existant.getStatusCode());
+  assertEquals(MessageResponse.class,existant.getBody().getClass());
+  assertEquals(MessageResponse.class,inconnu.getBody().getClass());
+  assertEquals(((MessageResponse)inconnu.getBody()).getMessage(),((MessageResponse)existant.getBody()).getMessage());
+ }
+
+ @Test void registerNeRenvoiePasLeJetonDeVerification(){
+  when(users.findByEmail("nouveau@test.local")).thenReturn(Optional.empty());
+  when(encoder.encode(any())).thenReturn("hashed");
+  Object corps=controller.register(registerRequest("Ali","nouveau@test.local","password1",null)).getBody();
+  assertEquals(MessageResponse.class,corps.getClass());
+  assertFalse(((MessageResponse)corps).getMessage().contains("Token"));
+ }
+
+ @Test void resetPasswordRevoqueToutesLesSessions(){
+  User cible=new User();cible.setEmail("cible@test.local");cible.setPasswordResetToken("jeton-valide");cible.setPasswordResetExpiresAt(LocalDateTime.now().plusMinutes(10));
+  when(users.findByPasswordResetToken("jeton-valide")).thenReturn(Optional.of(cible));
+  when(encoder.encode("NouveauMotDePasse1")).thenReturn("hashed");
+  ResponseEntity<?> response=controller.reset(Map.of("token","jeton-valide","password","NouveauMotDePasse1"));
+  assertEquals(200,response.getStatusCode().value());
+  verify(refreshTokens).revokeAll(cible);
+ }
 }
