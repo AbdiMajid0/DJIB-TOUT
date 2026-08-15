@@ -130,6 +130,7 @@ public class SellerPortalController {
     }
 
     @PatchMapping("/orders/{id}")
+    @Transactional
     public ResponseEntity<?> update(Authentication authentication, @PathVariable Long id, @RequestBody FulfillmentInput input) {
         User actor = authentication == null ? null : users.findByEmail(authentication.getName()).orElse(null); SellerFulfillment fulfillment = fulfillments.findById(id).orElse(null);
         if (fulfillment == null || !access.canManageOrders(actor, fulfillment.getSeller())) return ResponseEntity.status(403).build();
@@ -154,6 +155,7 @@ public class SellerPortalController {
                     "Votre commande #" + commande.getId() + " a été livrée. Un souci ? Vous pouvez demander un retour.",
                     "/orders/" + commande.getId());
         SellerFulfillment enregistre = fulfillments.save(fulfillment);
+        propagerStatutCommande(commande);
         // Renvoyer l'entite faisait echouer la serialisation sur ses proxys LAZY
         // (open-in-view=false) : l'expedition etait bien enregistree mais le
         // vendeur recevait une erreur. On renvoie les memes cles que
@@ -286,6 +288,40 @@ public class SellerPortalController {
     private String csvOptional(List<String> values, Map<String, Integer> positions, String name) {
         Integer index = positions.get(name);
         return index == null || index >= values.size() || values.get(index).isBlank() ? null : values.get(index).trim();
+    }
+
+    /**
+     * Reporte l'avancement des expeditions sur la commande elle-meme.
+     *
+     * Sans cela `Order.status` restait fige : l'acheteur voyait « en
+     * preparation » indefiniment, ne pouvait jamais demander de retour
+     * (ReturnController exige DELIVERED) ni publier d'avis (OwnershipService
+     * s'appuie sur les achats livres). Deux fonctionnalites entieres etaient
+     * inaccessibles.
+     *
+     * Une commande peut couvrir plusieurs vendeurs : elle n'avance que lorsque
+     * chacun d'eux a une expedition, et prend alors le statut du plus en
+     * retard. Les expeditions etant creees paresseusement a l'ouverture de
+     * l'ecran vendeur, on compare aux vendeurs reels des articles et non au
+     * nombre de lignes deja enregistrees.
+     */
+    private void propagerStatutCommande(Order commande) {
+        Set<Long> vendeurs = commande.getItems().stream().map(OrderItem::getProduct)
+                .map(Product::getSeller).filter(Objects::nonNull).map(User::getId)
+                .collect(java.util.stream.Collectors.toSet());
+        if (vendeurs.isEmpty()) return;
+        List<SellerFulfillment> expeditions = fulfillments.findByOrder(commande);
+        Set<Long> couverts = expeditions.stream().map(f -> f.getSeller().getId())
+                .collect(java.util.stream.Collectors.toSet());
+        if (!couverts.containsAll(vendeurs)) return;
+        OrderStatus atteint = expeditions.stream().map(SellerFulfillment::getStatus)
+                .min(Comparator.comparingInt(OrderStatus::ordinal)).orElse(null);
+        // Jamais de retour en arriere, et une commande annulee reste annulee.
+        if (atteint == null || atteint == OrderStatus.CANCELLED) return;
+        if (commande.getStatus() == OrderStatus.CANCELLED) return;
+        if (atteint.ordinal() <= commande.getStatus().ordinal()) return;
+        commande.setStatus(atteint);
+        orders.save(commande);
     }
 
     private boolean belongsToSeller(OrderItem item, User seller) {

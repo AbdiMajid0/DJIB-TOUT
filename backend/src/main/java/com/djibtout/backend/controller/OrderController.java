@@ -44,6 +44,9 @@ public class OrderController {
     private final CouponRepository couponRepository;
     private final ProductVariantRepository productVariantRepository;
     private final SellerEventService events;
+    // Le mode de paiement pilote le cycle de vie de la commande : sans liste
+    // fermee, une valeur inconnue etait traitee comme un paiement en ligne.
+    private static final java.util.Set<String> MODES_PAIEMENT = java.util.Set.of("WAAFI", "DMONEY", "DJIBPAY", "CASH");
 
     public OrderController(OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository, AddressRepository addressRepository, CouponRepository couponRepository, ProductVariantRepository productVariantRepository, SellerEventService events) {
         this.orderRepository = orderRepository;
@@ -76,13 +79,24 @@ public class OrderController {
             return ResponseEntity.badRequest().body("La commande ne peut pas être vide.");
         }
 
+        String methodePaiement = request.getPaymentMethod() == null ? "" : request.getPaymentMethod().trim().toUpperCase();
+        if (!MODES_PAIEMENT.contains(methodePaiement))
+            return ResponseEntity.badRequest().body("Mode de paiement inconnu.");
+        // Le paiement a la livraison ne passe par aucune etape de paiement en
+        // ligne : la commande restait donc PENDING avec une reservation de 15
+        // minutes, et OrderReservationService l'annulait — alors que le client
+        // avait vu une page de confirmation et le vendeur une notification.
+        boolean aLaLivraison = "CASH".equals(methodePaiement);
+
         Order order = new Order();
         order.setBuyer(buyer);
-        order.setStatus(OrderStatus.PENDING);
-        order.setPaymentMethod(request.getPaymentMethod());
+        order.setStatus(aLaLivraison ? OrderStatus.PROCESSING : OrderStatus.PENDING);
+        order.setPaymentMethod(methodePaiement);
         order.setDeliveryMethod("EXPRESS".equalsIgnoreCase(request.getDeliveryMethod())?"EXPRESS":"STANDARD");
         order.setIdempotencyKey(idempotencyKey.trim());
-        order.setReservedUntil(java.time.LocalDateTime.now().plusMinutes(15));
+        // Rien a liberer pour un paiement a la livraison : le stock est engage
+        // des la commande, contrepartie assumee de ce mode de paiement.
+        order.setReservedUntil(aLaLivraison ? null : java.time.LocalDateTime.now().plusMinutes(15));
         if (request.getAddressId() != null) {
             Address address = addressRepository.findById(request.getAddressId()).orElse(null);
             if (address == null || !address.getUser().getId().equals(buyer.getId())) {
