@@ -22,11 +22,31 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - run: npm run lint
+      # Pas d'etape de lint : aucun linter n'est installe dans le projet.
+      # `npm run lint` faisait echouer ce job a chaque execution. A retablir
+      # en meme temps qu'ESLint (ajout d'une devDependency + package-lock).
       - run: npm run build
 
   backend:
     runs-on: ubuntu-latest
+    # Quatre classes @SpringBootTest exigent une vraie base : Flyway cree le
+    # schema et les tests sont en ddl-auto=validate. Sans ce service, le
+    # contexte Spring ne demarrait pas et le job echouait systematiquement.
+    # Port et identifiants alignes sur backend/src/test/resources.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: djibtout_test
+          POSTGRES_USER: djibtout_test
+          POSTGRES_PASSWORD: djibtout_test
+        ports:
+          - "55432:5432"
+        options: >-
+          --health-cmd "pg_isready -U djibtout_test -d djibtout_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
     defaults:
       run:
         working-directory: backend
