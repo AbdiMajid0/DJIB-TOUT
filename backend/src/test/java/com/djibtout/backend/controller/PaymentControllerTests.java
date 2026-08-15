@@ -11,7 +11,8 @@ class PaymentControllerTests{
  UserRepository users=mock(UserRepository.class);
  WalletRepository wallets=mock(WalletRepository.class);
  WalletTransactionRepository walletTransactions=mock(WalletTransactionRepository.class);
- PaymentController controller=new PaymentController(payments,orders,products,users,wallets,walletTransactions);
+ com.djibtout.backend.service.BuyerNotificationService buyerNotifications=mock(com.djibtout.backend.service.BuyerNotificationService.class);
+ PaymentController controller=new PaymentController(payments,orders,products,users,wallets,walletTransactions,buyerNotifications);
 
  User buyer(long id){User u=new User();u.setId(id);u.setEmail("buyer"+id+"@test.local");return u;}
  UsernamePasswordAuthenticationToken auth(User u){when(users.findByEmail(u.getEmail())).thenReturn(Optional.of(u));return new UsernamePasswordAuthenticationToken(u.getEmail(),"x");}

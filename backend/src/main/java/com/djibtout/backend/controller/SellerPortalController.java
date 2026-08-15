@@ -38,11 +38,12 @@ public class SellerPortalController {
     private final SellerAccessService access;
     private final SellerSettlementRepository settlements;
     private final SellerEventService events;
+    private final com.djibtout.backend.service.BuyerNotificationService buyerNotifications;
 
     public SellerPortalController(UserRepository users, ProductRepository products, OrderRepository orders,
-                                  SellerStoreRepository stores, SellerFulfillmentRepository fulfillments, ProductQuestionRepository questions, ReviewRepository reviews, ReturnRequestRepository returnRequests, SellerAccessService access, SellerSettlementRepository settlements, SellerEventService events) {
+                                  SellerStoreRepository stores, SellerFulfillmentRepository fulfillments, ProductQuestionRepository questions, ReviewRepository reviews, ReturnRequestRepository returnRequests, SellerAccessService access, SellerSettlementRepository settlements, SellerEventService events, com.djibtout.backend.service.BuyerNotificationService buyerNotifications) {
         this.users = users; this.products = products; this.orders = orders;
-        this.stores = stores; this.fulfillments = fulfillments; this.questions = questions; this.reviews = reviews; this.returnRequests=returnRequests; this.access=access;this.settlements=settlements;this.events=events;
+        this.stores = stores; this.fulfillments = fulfillments; this.questions = questions; this.reviews = reviews; this.returnRequests=returnRequests; this.access=access;this.settlements=settlements;this.events=events;this.buyerNotifications=buyerNotifications;
     }
 
     private User seller(Authentication authentication) {
@@ -140,7 +141,29 @@ public class SellerPortalController {
         if (input.status() == OrderStatus.SHIPPED && (input.trackingNumber() == null || input.trackingNumber().isBlank())) return ResponseEntity.badRequest().body("Numéro de suivi requis.");
         fulfillment.setStatus(input.status()); fulfillment.setTrackingNumber(input.trackingNumber() == null ? null : input.trackingNumber().trim());
         events.audit(actor,"FULFILLMENT_UPDATED","fulfillment="+id+", status="+input.status());
-        return ResponseEntity.ok(fulfillments.save(fulfillment));
+        // L'acheteur ne voyait rien bouger : le statut du fulfillment change ici
+        // sans toucher celui de la commande.
+        Order commande = fulfillment.getOrder();
+        if (input.status() == OrderStatus.SHIPPED)
+            buyerNotifications.notify(commande.getBuyer(), "Commande expédiée",
+                    "Votre commande #" + commande.getId() + " est en route"
+                            + (fulfillment.getTrackingNumber() == null ? "." : " — suivi : " + fulfillment.getTrackingNumber() + "."),
+                    "/orders/" + commande.getId());
+        else if (input.status() == OrderStatus.DELIVERED)
+            buyerNotifications.notify(commande.getBuyer(), "Commande livrée",
+                    "Votre commande #" + commande.getId() + " a été livrée. Un souci ? Vous pouvez demander un retour.",
+                    "/orders/" + commande.getId());
+        SellerFulfillment enregistre = fulfillments.save(fulfillment);
+        // Renvoyer l'entite faisait echouer la serialisation sur ses proxys LAZY
+        // (open-in-view=false) : l'expedition etait bien enregistree mais le
+        // vendeur recevait une erreur. On renvoie les memes cles que
+        // GET /seller/orders, que l'ecran fusionne dans sa ligne.
+        Map<String,Object> vue = new LinkedHashMap<>();
+        vue.put("fulfillmentId", enregistre.getId());
+        vue.put("orderId", commande.getId());
+        vue.put("status", enregistre.getStatus());
+        vue.put("trackingNumber", enregistre.getTrackingNumber());
+        return ResponseEntity.ok(vue);
     }
 
     @GetMapping(value="/orders/export", produces="text/csv")
