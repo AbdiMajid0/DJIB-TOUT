@@ -12,7 +12,9 @@ class PaymentControllerTests{
  WalletRepository wallets=mock(WalletRepository.class);
  WalletTransactionRepository walletTransactions=mock(WalletTransactionRepository.class);
  com.djibtout.backend.service.BuyerNotificationService buyerNotifications=mock(com.djibtout.backend.service.BuyerNotificationService.class);
- PaymentController controller=new PaymentController(payments,orders,products,users,wallets,walletTransactions,buyerNotifications);
+ // La passerelle simulee reproduit le comportement d'avant : refus sur un
+ // numero finissant par 000 ou 999, acceptation sinon.
+ PaymentController controller=new PaymentController(payments,orders,products,users,wallets,walletTransactions,buyerNotifications,Optional.of(new com.djibtout.backend.service.payment.SimulatedPaymentGateway()));
 
  User buyer(long id){User u=new User();u.setId(id);u.setEmail("buyer"+id+"@test.local");return u;}
  UsernamePasswordAuthenticationToken auth(User u){when(users.findByEmail(u.getEmail())).thenReturn(Optional.of(u));return new UsernamePasswordAuthenticationToken(u.getEmail(),"x");}
