@@ -1,0 +1,35 @@
+# Contexte de build de l'image frontend (docker-compose utilise la racine du
+# depot comme contexte, car frontend/Dockerfile fait `COPY frontend/...`).
+#
+# Sans ce fichier, node_modules et dist etaient envoyes au demon Docker, et
+# `COPY frontend/ ./` ecrasait le resultat du `npm ci` de l'etape precedente
+# par les dependances de la machine hote.
+
+.git
+.github
+.vscode
+.idea
+.claude
+
+# Secrets : le .env de la racine contient le mot de passe de la base, le secret
+# JWT et le mot de passe SMTP. Il n'a rien a faire dans un contexte de build.
+.env
+.env.*
+!.env.example
+
+**/node_modules
+frontend/dist
+backend/target
+backend/uploads
+
+*.log
+*.dump
+backups/
+video-analysis/
+docs/
+design/
+scripts/
+README.md
+CONVERSATION_PROJET.md
+homepage-mockup.html
+hb_home.html

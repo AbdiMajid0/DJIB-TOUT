@@ -1,0 +1,10 @@
+# Contexte de build de l'image backend (context: ./backend).
+# Le Dockerfile n'a besoin que de mvnw, .mvn, pom.xml et src.
+
+target/
+uploads/
+*.log
+*.cmd
+*.ps1
+docker-compose.test.yml
+HELP.md
