@@ -38,4 +38,11 @@ export async function api(path, options = {}, retry = true) {
 }
 
 export const money = value => `${new Intl.NumberFormat('fr-FR').format(Number(value || 0))} FDJ`
-export const imageUrl = product => product?.images?.[0] || null
+// `images` peut contenir n'importe quoi : emoji du jeu de demonstration, texte
+// saisi par un vendeur. Rendre <img src="emoji"> affiche une image cassee, la
+// ou une liste vide aurait affiche le repli prevu par l'interface. On ne retient
+// donc que les valeurs reellement exploitables comme source.
+const sourceUtilisable = value =>
+  typeof value === 'string' && /^(https?:\/\/|\/|data:image\/)/.test(value.trim())
+export const imageUrl = product =>
+  (product?.images || []).find(sourceUtilisable)?.trim() || null

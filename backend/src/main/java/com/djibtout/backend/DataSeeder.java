@@ -88,7 +88,9 @@ public class DataSeeder implements CommandLineRunner {
         p.setPrice(price);
         p.setStockQuantity(stock);
         p.setCategory(category);
-        p.setImages(List.of(image)); // Using emojis as placeholders for images
+        // Ne rien mettre dans `images` : le champ attend des URL, et un emoji y
+        // produisait un <img src="emoji"> casse cote client. Laisse vide,
+        // l'interface affiche son propre repli.
         p.setSeller(seller);
         return p;
     }
