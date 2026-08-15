@@ -47,6 +47,7 @@ import { api, imageUrl, money } from "./lib/api";
 import { useUser } from "./context/UserContext";
 import AccountDeletionPage from "./AccountDeletionPage";
 import ProductDetailPage from "./ProductDetailPage";
+import PublicStorePage from "./PublicStorePage";
 import SellerLanding from "./SellerLanding";
 import SellerAuth from "./SellerAuth";
 import SellerOnboarding from "./SellerOnboarding";
@@ -65,6 +66,11 @@ import AdminUsersPage from "./AdminUsersPage";
 import AdminOperationsPage from "./AdminOperationsPage";
 import AdminModerationPage from "./AdminModerationPage";
 import AdminProductsPage from "./AdminProductsPage";
+import AdminCategoriesPage from "./AdminCategoriesPage";
+import AdminCampaignsPage from "./AdminCampaignsPage";
+import AdminCouponsPage from "./AdminCouponsPage";
+import AdminHomeSectionsPage from "./AdminHomeSectionsPage";
+import AdminAuditPage from "./AdminAuditPage";
 import "./portal-notifications.css";
 
 const products = [
@@ -118,6 +124,7 @@ const adminNav = [
 ];
 const accountNav = [
   [UserRound, "Vue générale", "/account"],
+  [Bell, "Mes notifications", "/account/notifications"],
   [ClipboardList, "Mes commandes", "/account/orders"],
   [CreditCard, "Mes paiements", "/payments"],
   [Truck, "Mes retours", "/account/returns"],
@@ -1380,6 +1387,16 @@ function Dashboard({ type }) {
     content = <AdminProductsPage />;
   if (type === "admin" && pathname === "/admin/sellers")
     content = <AdminSellersPage />;
+  if (type === "admin" && pathname === "/admin/categories")
+    content = <AdminCategoriesPage />;
+  if (type === "admin" && pathname === "/admin/campaigns")
+    content = <AdminCampaignsPage />;
+  if (type === "admin" && pathname === "/admin/coupons")
+    content = <AdminCouponsPage />;
+  if (type === "admin" && pathname === "/admin/home-sections")
+    content = <AdminHomeSectionsPage />;
+  if (type === "admin" && pathname === "/admin/audit")
+    content = <AdminAuditPage />;
   return (
     <Portal type={type} nav={type === "seller" ? sellerNav : adminNav}>
       {content}
@@ -1393,12 +1410,24 @@ function Portal({ type, nav, children }) {
   const [notificationCount, setNotificationCount] = React.useState(0);
   const [orderCount, setOrderCount] = React.useState(0);
   const [storeName, setStoreName] = React.useState("");
+  // Le portail acheteur affichait une cloche sans compteur et sans lien : rien
+  // ne remontait les commandes, paiements et retours de son côté.
+  React.useEffect(() => {
+    if (type !== "account") return;
+    const refresh = () => api("/notifications/unread-count").then(d => setNotificationCount(Number(d?.count) || 0)).catch(() => {});
+    refresh();
+    window.addEventListener("dt:notifications", refresh);
+    return () => window.removeEventListener("dt:notifications", refresh);
+  }, [type]);
   React.useEffect(() => {
     if (type !== "seller") return;
     const refresh = () => api("/seller/notifications").then(items => setNotificationCount(items.filter(item => !item.read).length)).catch(() => {});
     refresh();
     api("/seller/store").then(store => setStoreName(store.name)).catch(() => {});
-    api("/seller/orders").then(items => setOrderCount(items.filter(item => ["PAID", "PROCESSING"].includes(item.status)).length)).catch(() => {});
+    // Le filtre portait sur "PAID", qui n'existe pas dans OrderStatus : le badge
+    // ne comptait donc que les PROCESSING. On y ajoute les PENDING pour que le
+    // vendeur voie arriver les commandes avant même la confirmation du paiement.
+    api("/seller/orders").then(items => setOrderCount(items.filter(item => ["PENDING", "PROCESSING"].includes(item.status)).length)).catch(() => {});
     window.addEventListener("dt:notifications", refresh);
     return () => window.removeEventListener("dt:notifications", refresh);
   }, [type]);
@@ -1461,7 +1490,16 @@ function Portal({ type, nav, children }) {
             <Search />
             <input placeholder="Rechercher…" />
           </div>
-          <Link to={type === "seller" ? "/seller/notifications" : "#"} className="portal-bell">
+          <Link
+            to={
+              type === "seller"
+                ? "/seller/notifications"
+                : type === "account"
+                  ? "/account/notifications"
+                  : "#"
+            }
+            className="portal-bell"
+          >
             <Bell />
             {notificationCount > 0 && <i>{notificationCount > 99 ? "99+" : notificationCount}</i>}
           </Link>
@@ -1486,6 +1524,12 @@ function UserAccountContent() {
     balance: 0,
   });
   const [error, setError] = React.useState("");
+  const [page, setPage] = React.useState(0);
+  // Sans cette remise à zéro, passer d'un écran en page 3 à un écran plus court
+  // afficherait une liste vide.
+  React.useEffect(() => {
+    setPage(0);
+  }, [key]);
   React.useEffect(() => {
     if (!user) {
       navigate("/login", { replace: true });
@@ -1503,10 +1547,12 @@ function UserAccountContent() {
       ])
         .then(([p, o, a, f, w]) => {
           setProfile(p);
+          // Commandes et favoris sont paginés : le total vit désormais dans
+          // `totalElements`, `length` y vaudrait undefined.
           setSummary({
-            orders: o.length,
+            orders: o?.totalElements ?? o?.length ?? 0,
             addresses: a.length,
-            favorites: f.length,
+            favorites: f?.totalElements ?? f?.length ?? 0,
             balance: w.balance,
           });
         })
@@ -1516,19 +1562,23 @@ function UserAccountContent() {
         .then(setData)
         .catch((e) => setError(e.message));
     else if (key === "favorites")
-      api("/favorites")
+      api(`/favorites?page=${page}`)
         .then(setData)
         .catch((e) => setError(e.message));
     else if (key === "orders")
-      api("/orders/my-orders")
+      api(`/orders/my-orders?page=${page}`)
         .then(setData)
         .catch((e) => setError(e.message));
     else if (key === "returns")
       api("/returns/my")
         .then(setData)
         .catch((e) => setError(e.message));
+    else if (key === "notifications")
+      api("/notifications")
+        .then(setData)
+        .catch((e) => setError(e.message));
     else if (key === "reviews")
-      api("/reviews/my-reviews")
+      api(`/reviews/my-reviews?page=${page}`)
         .then(setData)
         .catch((e) => setError(e.message));
     else if (key === "questions")
@@ -1543,8 +1593,13 @@ function UserAccountContent() {
       Promise.all([api("/wallet"), api("/wallet/transactions")])
         .then(([wallet, transactions]) => setData({ wallet, transactions }))
         .catch((e) => setError(e.message));
-  }, [key, user, navigate]);
+  }, [key, user, navigate, page]);
   if (!user) return null;
+  // Les écrans paginés reçoivent un objet Page, les autres un tableau : on
+  // normalise ici pour que les panneaux continuent de recevoir une liste.
+  const paginee = data && !Array.isArray(data) && Array.isArray(data.content);
+  const liste = paginee ? data.content : Array.isArray(data) ? data : [];
+  const infoPage = paginee ? data : null;
   return (
     <div className="portal-content">
       <PageTitle
@@ -1572,13 +1627,30 @@ function UserAccountContent() {
           reload={() => api("/addresses").then(setData)}
         />
       ) : key === "favorites" ? (
-        <ProductGrid items={Array.isArray(data) ? data : []} />
+        <>
+          <ProductGrid items={liste} />
+          <Pagination info={infoPage} page={page} onChange={setPage} />
+        </>
       ) : key === "orders" ? (
-        <OrdersPanel orders={data} />
+        <>
+          <OrdersPanel orders={liste} />
+          <Pagination info={infoPage} page={page} onChange={setPage} />
+        </>
+      ) : key === "notifications" ? (
+        <NotificationsPanel
+          items={data}
+          reload={() => api("/notifications").then(setData)}
+        />
       ) : key === "returns" ? (
-        <ReturnsPanel items={data} />
+        <ReturnsPanel
+          items={data}
+          reload={() => api("/returns/my").then(setData)}
+        />
       ) : key === "reviews" ? (
-        <ReviewsPanel items={data} />
+        <>
+          <ReviewsPanel items={liste} />
+          <Pagination info={infoPage} page={page} onChange={setPage} />
+        </>
       ) : key === "questions" ? (
         <QuestionsPanel items={data} />
       ) : key === "coupons" ? (
@@ -2063,9 +2135,123 @@ function OrdersPanel({ orders = [] }) {
     </>
   );
 }
-function ReturnsPanel({ items = [] }) {
+/**
+ * Contrôles de pagination. `info` est la réponse Page du serveur ; le composant
+ * ne s'affiche pas s'il n'y a qu'une seule page, pour ne pas encombrer les
+ * écrans courts.
+ */
+function Pagination({ info, page, onChange }) {
+  const total = Number(info?.totalPages ?? 0);
+  if (!info || total <= 1) return null;
+  const elements = Number(info.totalElements ?? 0);
+  return (
+    <nav className="pagination" aria-label="Pagination">
+      <button disabled={page <= 0} onClick={() => onChange(page - 1)}>
+        Précédent
+      </button>
+      <span>
+        Page {page + 1} sur {total}
+        {elements ? ` · ${elements} élément${elements > 1 ? "s" : ""}` : ""}
+      </span>
+      <button disabled={page + 1 >= total} onClick={() => onChange(page + 1)}>
+        Suivant
+      </button>
+    </nav>
+  );
+}
+function NotificationsPanel({ items = [], reload }) {
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const nonLues = items.filter((n) => !n.read).length;
+  // `dt:notifications` est déjà écouté par le portail : l'émettre remet le
+  // compteur de la cloche à jour sans recharger la page.
+  async function marquer(action) {
+    setBusy(true);
+    setError("");
+    try {
+      await action();
+      await reload?.();
+      window.dispatchEvent(new Event("dt:notifications"));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div className="support-list">
+      {error && <div className="api-error">{error}</div>}
+      {nonLues > 0 && (
+        <div className="notif-barre">
+          <span>
+            {nonLues} notification{nonLues > 1 ? "s" : ""} non lue
+            {nonLues > 1 ? "s" : ""}
+          </span>
+          <button
+            disabled={busy}
+            onClick={() =>
+              marquer(() =>
+                api("/notifications/read-all", { method: "PATCH" }),
+              )
+            }
+          >
+            Tout marquer comme lu
+          </button>
+        </div>
+      )}
+      {!items.length && (
+        <div className="catalog-message">Aucune notification pour le moment.</div>
+      )}
+      {items.map((n) => (
+        <article key={n.id} className={n.read ? "notif-lue" : ""}>
+          <div className="support-icon">
+            <Bell />
+          </div>
+          <div>
+            <small>{new Date(n.createdAt).toLocaleString("fr-FR")}</small>
+            <h3>{n.title}</h3>
+            <p>{n.message}</p>
+            {n.link && <Link to={n.link}>Voir le détail</Link>}
+          </div>
+          {!n.read && (
+            <button
+              className="notif-lire"
+              disabled={busy}
+              onClick={() =>
+                marquer(() =>
+                  api(`/notifications/${n.id}/read`, { method: "PATCH" }),
+                )
+              }
+            >
+              Marquer comme lu
+            </button>
+          )}
+        </article>
+      ))}
+    </div>
+  );
+}
+function ReturnsPanel({ items = [], reload }) {
+  const [busy, setBusy] = React.useState(null);
+  const [error, setError] = React.useState("");
+  // L'annulation n'est possible que tant que le vendeur n'a pas tranché ; passé
+  // REQUESTED, le serveur répond 409 et la décision lui appartient.
+  async function annuler(x) {
+    if (!confirm("Retirer cette demande de retour ?")) return;
+    setBusy(x.id);
+    setError("");
+    try {
+      await api(`/returns/${x.id}/cancel`, { method: "POST" });
+      await reload?.();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(null);
+    }
+  }
+  return (
+    <div className="support-list">
+      {error && <div className="api-error">{error}</div>}
       {!items.length && (
         <div className="catalog-message">Aucune demande de retour.</div>
       )}
@@ -2081,6 +2267,15 @@ function ReturnsPanel({ items = [] }) {
             {x.sellerResponse && (
               <blockquote>Réponse du vendeur : {x.sellerResponse}</blockquote>
             )}
+            {x.status === "REQUESTED" && (
+              <button
+                className="return-cancel"
+                disabled={busy === x.id}
+                onClick={() => annuler(x)}
+              >
+                {busy === x.id ? "Annulation…" : "Annuler ma demande"}
+              </button>
+            )}
           </div>
           <span className="status">
             {{
@@ -2089,6 +2284,7 @@ function ReturnsPanel({ items = [] }) {
               REJECTED: "Refusé",
               RECEIVED: "Reçu",
               REFUNDED: "Remboursé",
+              CANCELLED: "Annulé",
             }[x.status] || x.status}
           </span>
           <strong>{money(x.refundAmount)}</strong>
@@ -2256,9 +2452,28 @@ function ListsPanel({ items = [], reload }) {
               <h3>{x.name}</h3>
               <p>{x.productIds?.length || 0} produit(s)</p>
               <div className="list-products">
-                {x.productIds?.map((id) => (
+                {x.productIds?.map((id) => {
+                  // L'API ne renvoyait que des identifiants : on affichait
+                  // « Produit #12 ». Elle joint désormais nom, prix et image.
+                  // On continue d'itérer sur productIds pour qu'un produit
+                  // supprimé du catalogue reste retirable de la liste.
+                  const p = x.products?.find((item) => item.id === id);
+                  // `images` contient parfois un emoji plutôt qu'une URL
+                  // (données du DataSeeder) : le passer à <img src> donnerait
+                  // une image cassée, on l'affiche alors comme un glyphe.
+                  const img = imageUrl(p);
+                  const estUrl =
+                    typeof img === "string" &&
+                    (img.startsWith("http") || img.startsWith("/"));
+                  return (
                   <span key={id}>
-                    <Link to={"/product/" + id}>Produit #{id}</Link>
+                    <Link to={"/product/" + id}>
+                      {img ? (
+                        estUrl ? <img src={img} alt="" /> : <i>{img}</i>
+                      ) : null}
+                      <b>{p?.name || `Produit #${id}`}</b>
+                      {p ? <small>{money(p.price)}</small> : <small>indisponible</small>}
+                    </Link>
                     <button
                       title="Retirer"
                       onClick={() =>
@@ -2272,7 +2487,8 @@ function ListsPanel({ items = [], reload }) {
                       ×
                     </button>
                   </span>
-                ))}
+                  );
+                })}
               </div>
               <div className="list-add">
                 <input
@@ -2298,7 +2514,12 @@ function ListsPanel({ items = [], reload }) {
 function ListsPage() {
   const [items, setItems] = React.useState([]);
   const load = () => api("/lists").then(setItems);
-  React.useEffect(load, []);
+  // `useEffect(load, [])` renvoyait la promesse de `load` ; React la prend pour
+  // la fonction de nettoyage et lève « destroy is not a function », ce qui
+  // vidait la page. Les accolades garantissent un retour vide.
+  React.useEffect(() => {
+    load();
+  }, []);
   return (
     <Protected>
       <Portal type="account" nav={accountNav}>
@@ -2603,7 +2824,8 @@ function StoreForm() {
 function Orders() {
   const { user } = useUser();
   const navigate = useNavigate();
-  const [orders, setOrders] = React.useState([]);
+  const [data, setData] = React.useState([]);
+  const [page, setPage] = React.useState(0);
   const [error, setError] = React.useState("");
   const [params] = useSearchParams();
   React.useEffect(() => {
@@ -2611,10 +2833,12 @@ function Orders() {
       navigate("/login", { replace: true });
       return;
     }
-    api("/orders/my-orders")
-      .then(setOrders)
+    api(`/orders/my-orders?page=${page}`)
+      .then(setData)
       .catch((e) => setError(e.message));
-  }, [user, navigate]);
+  }, [user, navigate, page]);
+  const orders = Array.isArray(data) ? data : (data?.content ?? []);
+  const infoPage = data && !Array.isArray(data) ? data : null;
   return (
     <Shop>
       <Crumb current="Mes commandes" />
@@ -2627,6 +2851,7 @@ function Orders() {
         )}
         {error && <div className="api-error">{error}</div>}
         <OrdersPanel orders={orders} />
+        <Pagination info={infoPage} page={page} onChange={setPage} />
       </main>
     </Shop>
   );
@@ -2881,13 +3106,16 @@ function ReturnButton({ order, item }) {
   );
 }
 function PaymentHistory() {
-  const [items, setItems] = React.useState([]);
+  const [data, setData] = React.useState(null);
+  const [page, setPage] = React.useState(0);
   const [error, setError] = React.useState("");
   React.useEffect(() => {
-    api("/payments/my/history")
-      .then(setItems)
+    api(`/payments/my/history?page=${page}`)
+      .then(setData)
       .catch((e) => setError(e.message));
-  }, []);
+  }, [page]);
+  const items = Array.isArray(data) ? data : (data?.content ?? []);
+  const infoPage = data && !Array.isArray(data) ? data : null;
   return (
     <Shop>
       <Crumb current="Mes paiements" />
@@ -2923,6 +3151,7 @@ function PaymentHistory() {
             </article>
           ))}
         </div>
+        <Pagination info={infoPage} page={page} onChange={setPage} />
       </main>
     </Shop>
   );
@@ -3370,6 +3599,7 @@ function AppRoutes() {
       <Route path="/search" element={<Catalog />} />
       <Route path="/category/:slug" element={<Catalog />} />
       <Route path="/product/:id" element={<ProductDetail />} />
+      <Route path="/boutique/vendeur/:sellerId" element={<PublicStorePage />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/login" element={<Auth />} />
