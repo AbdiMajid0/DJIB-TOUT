@@ -56,10 +56,16 @@ public class SecurityConfig {
                 .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .permissionsPolicy(p -> p.policy("camera=(), microphone=(), geolocation=(), payment=()")))
             .authorizeHttpRequests(auth -> auth
+                // Sans cette ligne, toute exception sur une route authentifiee
+                // est renvoyee vers /error, que `anyRequest().authenticated()`
+                // refuse : la vraie erreur (500, 405...) ressort en 401, et le
+                // client prend cela pour une session expiree et deconnecte.
+                // `server.error.include-message=never` en prod/staging : rien ne fuit.
+                .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/telemetry/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products", "/api/products/**", "/api/catalog/**", "/uploads/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products", "/api/products/**", "/api/catalog/**", "/api/public/**", "/uploads/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/*/interactions").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products", "/api/products/**").hasAnyRole("SELLER","ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/products/**").hasAnyRole("SELLER","ADMIN")

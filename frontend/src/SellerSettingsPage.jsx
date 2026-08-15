@@ -88,6 +88,13 @@ export default function SellerSettingsPage({ teamMode = false }) {
         method: "PUT",
         body: JSON.stringify(password),
       });
+      // Le changement de mot de passe révoque toutes les sessions ; le serveur
+      // en délivre une nouvelle pour cet appareil. Sans l'enregistrer, on serait
+      // déconnecté à l'expiration du jeton d'accès courant.
+      if (x.token && x.refreshToken) {
+        localStorage.setItem("dt.accessToken", x.token);
+        localStorage.setItem("dt.refreshToken", x.refreshToken);
+      }
       setMessage(x.message);
       setPassword({ currentPassword: "", newPassword: "", confirm: "" });
     } catch (e) {

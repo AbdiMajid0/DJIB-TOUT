@@ -9,7 +9,10 @@ export function UserProvider({children}) {
   const [checking,setChecking] = useState(()=>Boolean(localStorage.getItem('dt.accessToken')))
   useEffect(()=>localStorage.setItem('dt.cart',JSON.stringify(cart)),[cart])
   useEffect(()=>{if(!user)return;api('/favorites/ids').then(setFavoriteIds).catch(()=>setFavoriteIds([]))},[user])
-  useEffect(()=>{if(!localStorage.getItem('dt.accessToken')){setChecking(false);return}api('/auth/me').then(value=>{setUser(value);localStorage.setItem('dt.user',JSON.stringify(value))}).catch(()=>logout(false)).finally(()=>setChecking(false))},[])
+  // Au démarrage, toute erreur de `/auth/me` déconnectait — y compris une panne
+  // serveur ou une coupure réseau. On ne déconnecte plus que sur un vrai 401 ;
+  // sinon on repart de la session mémorisée, quitte à la revalider plus tard.
+  useEffect(()=>{if(!localStorage.getItem('dt.accessToken')){setChecking(false);return}api('/auth/me').then(value=>{setUser(value);localStorage.setItem('dt.user',JSON.stringify(value))}).catch(error=>{if(error?.status===401){logout(false);return}const memorise=localStorage.getItem('dt.user');if(memorise)try{setUser(JSON.parse(memorise))}catch{/* entrée illisible */}}).finally(()=>setChecking(false))},[])
   useEffect(()=>{const out=()=>logout(false);window.addEventListener('dt:unauthorized',out);return()=>window.removeEventListener('dt:unauthorized',out)},[])
   async function login(email,password){const data=await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})});localStorage.setItem('dt.accessToken',data.token);localStorage.setItem('dt.refreshToken',data.refreshToken);const value={name:data.name,email:data.email,role:data.role};localStorage.setItem('dt.user',JSON.stringify(value));setUser(value);return value}
   async function register(name,email,password){return api('/auth/register',{method:'POST',body:JSON.stringify({name,email,password,role:'BUYER'})})}

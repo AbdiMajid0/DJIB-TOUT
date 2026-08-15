@@ -27,7 +27,12 @@ export async function api(path, options = {}, retry = true) {
       }
       window.dispatchEvent(new Event('dt:unauthorized'))
     }
-    throw new Error(messageOf(data, `Erreur ${response.status}`))
+    // Le statut est conservé sur l'erreur : sans lui, l'appelant ne peut pas
+    // distinguer une session expirée (401, il faut déconnecter) d'une panne
+    // serveur ou réseau (il ne faut pas).
+    const error = new Error(messageOf(data, `Erreur ${response.status}`))
+    error.status = response.status
+    throw error
   }
   return data
 }
