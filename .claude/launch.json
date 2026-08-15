@@ -14,6 +14,18 @@
       "port": 3000
     },
     {
+      "name": "backend-local",
+      "runtimeExecutable": "C:\\Users\\radwa\\OneDrive\\Desktop\\DJIB TOUT\\backend\\start-local.cmd",
+      "runtimeArgs": [],
+      "port": 8083
+    },
+    {
+      "name": "frontend-local",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set VITE_PROXY_TARGET=http://localhost:8083 && npm run dev --prefix frontend -- --port 5181 --strictPort"],
+      "port": 5181
+    },
+    {
       "name": "maquette",
       "runtimeExecutable": "node",
       "runtimeArgs": [
