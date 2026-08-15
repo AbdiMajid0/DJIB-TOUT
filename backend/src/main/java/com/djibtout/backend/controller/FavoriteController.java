@@ -40,24 +40,25 @@ public class FavoriteController {
 
     @Transactional(readOnly = true)
     @GetMapping
-    public ResponseEntity<?> getMyFavorites() {
+    public ResponseEntity<?> getMyFavorites(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
         User user = getAuthenticatedUser();
         if (user == null) {
             return ResponseEntity.status(401).body("Vous devez être connecté.");
         }
 
-        List<Favorite> favorites = favoriteRepository.findByUserOrderByCreatedAtDesc(user);
-        List<Product> products = favorites.stream()
+        // `Page.map` conserve les métadonnées de pagination tout en exposant les
+        // produits, seule chose dont l'écran a besoin.
+        return ResponseEntity.ok(favoriteRepository
+                .findByUserOrderByCreatedAtDesc(user, OrderController.pageRequest(page, size))
                 .map(f -> {
                     Product p = f.getProduct();
                     if (p.getImages() != null) {
                         p.getImages().size(); // Force initialization inside transaction
                     }
                     return p;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(products);
+                }));
     }
 
     @Transactional(readOnly = true)

@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByBuyerId(Long buyerId);
     List<Order> findByBuyerOrderByCreatedAtDesc(User buyer);
+    org.springframework.data.domain.Page<Order> findByBuyerOrderByCreatedAtDesc(User buyer, org.springframework.data.domain.Pageable pageable);
     Optional<Order> findByBuyerAndIdempotencyKey(User buyer,String idempotencyKey);
     List<Order> findByStatusAndReservedUntilBefore(com.djibtout.backend.entity.OrderStatus status,LocalDateTime time);
 

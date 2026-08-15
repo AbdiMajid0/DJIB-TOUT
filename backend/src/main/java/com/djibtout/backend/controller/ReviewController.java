@@ -106,14 +106,16 @@ public class ReviewController {
     // Authenticated: Get current user's reviews
     @Transactional(readOnly = true)
     @GetMapping("/reviews/my-reviews")
-    public ResponseEntity<?> getMyReviews() {
+    public ResponseEntity<?> getMyReviews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         User user = getAuthenticatedUser();
         if (user == null) {
             return ResponseEntity.status(401).body("Vous devez être connecté.");
         }
 
-        List<Review> myReviews = reviewRepository.findByUserOrderByCreatedAtDesc(user);
-        return ResponseEntity.ok(myReviews);
+        return ResponseEntity.ok(reviewRepository.findByUserOrderByCreatedAtDesc(
+                user, com.djibtout.backend.controller.OrderController.pageRequest(page, size)));
     }
 }
 

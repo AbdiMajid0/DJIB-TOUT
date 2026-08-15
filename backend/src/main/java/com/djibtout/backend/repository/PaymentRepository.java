@@ -14,4 +14,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByTransactionId(String transactionId);
     Optional<Payment> findFirstByOrderAndStatusOrderByCreatedAtDesc(Order order, String status);
     List<Payment> findByOrderBuyerOrderByCreatedAtDesc(com.djibtout.backend.entity.User buyer);
+    org.springframework.data.domain.Page<Payment> findByOrderBuyerOrderByCreatedAtDesc(com.djibtout.backend.entity.User buyer, org.springframework.data.domain.Pageable pageable);
 }

@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     List<Favorite> findByUserOrderByCreatedAtDesc(User user);
+    org.springframework.data.domain.Page<Favorite> findByUserOrderByCreatedAtDesc(User user, org.springframework.data.domain.Pageable pageable);
     Optional<Favorite> findByUserAndProduct(User user, Product product);
     boolean existsByUserAndProduct(User user, Product product);
     void deleteByUserAndProduct(User user, Product product);

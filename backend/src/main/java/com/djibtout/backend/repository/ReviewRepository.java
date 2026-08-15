@@ -14,6 +14,7 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByProductOrderByCreatedAtDesc(Product product);
     List<Review> findByUserOrderByCreatedAtDesc(User user);
+    org.springframework.data.domain.Page<Review> findByUserOrderByCreatedAtDesc(User user, org.springframework.data.domain.Pageable pageable);
     long countByProduct(Product product);
     List<Review> findByProductSellerIdOrderByCreatedAtDesc(Long sellerId);
     long countByProductSellerIdAndSellerResponseIsNull(Long sellerId);

@@ -26,7 +26,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -146,8 +149,17 @@ public class OrderController {
         return ResponseEntity.ok(new OrderResponse(true,"Commande validée avec succès.",savedOrder.getId(),savedOrder.getTotalAmount(),savedOrder.getSubtotalAmount(),savedOrder.getDiscountAmount(),savedOrder.getDeliveryFee()));
     }
 
+    /**
+     * Pagine comme /api/products : parametres `page` et `size`, reponse Page.
+     * Le client sait deja lire cette forme (`d.content || d`).
+     */
+    // Sans transaction ici, la session se referme des le retour du depot et la
+    // construction du resume echoue sur `items`.
+    @Transactional(readOnly = true)
     @GetMapping("/my-orders")
-    public ResponseEntity<?> getMyOrders() {
+    public ResponseEntity<?> getMyOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
             return ResponseEntity.status(401).body("Vous devez être connecté.");
@@ -159,8 +171,54 @@ public class OrderController {
             return ResponseEntity.status(401).body("Utilisateur introuvable.");
         }
 
-        List<Order> orders = orderRepository.findByBuyerOrderByCreatedAtDesc(buyer);
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(orderRepository
+                .findByBuyerOrderByCreatedAtDesc(buyer, pageRequest(page, size))
+                .map(OrderController::resume));
+    }
+
+    /**
+     * `Order.buyer` est un proxy LAZY : renvoyer l'entite echouait en 500 des
+     * que l'utilisateur avait une commande — le defaut ne se voyait pas tant que
+     * la table etait vide. L'ecran de liste n'a besoin que de ces champs, et
+     * l'entite complete embarquait le compte de l'acheteur a chaque ligne.
+     */
+    static Map<String, Object> resume(Order o) {
+        Map<String, Object> v = new LinkedHashMap<>();
+        v.put("id", o.getId());
+        v.put("status", o.getStatus());
+        v.put("totalAmount", o.getTotalAmount());
+        v.put("subtotalAmount", o.getSubtotalAmount());
+        v.put("discountAmount", o.getDiscountAmount());
+        v.put("deliveryFee", o.getDeliveryFee());
+        v.put("deliveryAddress", o.getDeliveryAddress());
+        v.put("deliveryMethod", o.getDeliveryMethod());
+        v.put("paymentMethod", o.getPaymentMethod());
+        v.put("createdAt", o.getCreatedAt());
+        List<Map<String, Object>> articles = new ArrayList<>();
+        if (o.getItems() != null) {
+            for (OrderItem item : o.getItems()) {
+                Map<String, Object> a = new LinkedHashMap<>();
+                a.put("id", item.getId());
+                a.put("quantity", item.getQuantity());
+                a.put("price", item.getPrice());
+                Product p = item.getProduct();
+                if (p != null) {
+                    Map<String, Object> produit = new LinkedHashMap<>();
+                    produit.put("id", p.getId());
+                    produit.put("name", p.getName());
+                    produit.put("images", p.getImages() == null ? List.of() : new ArrayList<>(p.getImages()));
+                    a.put("product", produit);
+                }
+                articles.add(a);
+            }
+        }
+        v.put("items", articles);
+        return v;
+    }
+
+    /** Borne la taille : un `size` arbitraire permettrait de vider la table. */
+    static org.springframework.data.domain.PageRequest pageRequest(int page, int size) {
+        return org.springframework.data.domain.PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 50));
     }
 
     @GetMapping("/seller-orders")
