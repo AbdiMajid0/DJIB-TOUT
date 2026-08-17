@@ -8,11 +8,21 @@ import java.time.LocalDateTime; import java.util.*;
 @RestController @RequestMapping("/api/auth")
 public class AuthController {
  private static final org.slf4j.Logger log=org.slf4j.LoggerFactory.getLogger(AuthController.class);
+ /**
+  * BUG-17 : l'inscription verifiait l'unicite sur l'adresse telle que saisie
+  * puis enregistrait sa version minuscule, tandis que la connexion cherchait
+  * a nouveau la casse brute. Deux consequences : « Radwan@x.com » et
+  * « radwan@x.com » creaient deux comptes, et un utilisateur inscrit avec une
+  * majuscule ne pouvait plus se connecter — le mot de passe etait bon, le
+  * serveur repondait « Email ou mot de passe incorrect ».
+  * Une seule normalisation, appliquee a chaque point d'entree.
+  */
+ private static String normaliser(String email){return email==null?"":email.trim().toLowerCase(java.util.Locale.ROOT);}
  @org.springframework.beans.factory.annotation.Autowired(required=false) private org.springframework.beans.factory.ObjectProvider<TransactionalEmailService> emailProvider;
  private final AuthenticationManager authenticationManager; private final UserDetailsService userDetailsService; private final JwtUtil jwtUtil; private final UserRepository users; private final PasswordEncoder encoder;private final RefreshTokenService refreshTokens;private final LoginAttemptService attempts;private final SellerEventService events;
  public AuthController(AuthenticationManager a,UserDetailsService d,JwtUtil j,UserRepository u,PasswordEncoder e,RefreshTokenService rt,LoginAttemptService la,SellerEventService events){authenticationManager=a;userDetailsService=d;jwtUtil=j;users=u;encoder=e;refreshTokens=rt;attempts=la;this.events=events;}
- @PostMapping("/register") public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest r){if(users.findByEmail(r.email).isPresent())return ResponseEntity.badRequest().body(new MessageResponse("L'email est déjà utilisé."));User u=new User();u.setName(r.name);u.setEmail(r.email.toLowerCase());u.setPassword(encoder.encode(r.password));u.setRole("SELLER".equalsIgnoreCase(r.role)?Role.SELLER:Role.BUYER);u.setEmailVerificationToken(UUID.randomUUID().toString());users.save(u);TransactionalEmailService mail=emailProvider==null?null:emailProvider.getIfAvailable();if(mail!=null)mail.verification(u.getEmail(),u.getEmailVerificationToken());return ResponseEntity.ok(new MessageResponse("Inscription réussie. Vérifiez votre email."));}
- @PostMapping("/login") public ResponseEntity<?> login(@Valid @RequestBody LoginRequest r){if(attempts.blocked(r.email))return ResponseEntity.status(429).body(new MessageResponse("Trop de tentatives. Réessayez plus tard."));try{authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(r.email,r.password));}catch(Exception e){attempts.failed(r.email);return ResponseEntity.status(401).body(new MessageResponse("Email ou mot de passe incorrect."));}attempts.succeeded(r.email);UserDetails d=userDetailsService.loadUserByUsername(r.email);User u=users.findByEmail(r.email).orElseThrow();events.audit(u,"AUTH_LOGIN","account="+u.getId());return ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(d),refreshTokens.issue(u,d),u.getName(),u.getEmail(),u.getRole().name()));}
+ @PostMapping("/register") public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest r){String email=normaliser(r.email);if(users.findByEmail(email).isPresent())return ResponseEntity.badRequest().body(new MessageResponse("L'email est déjà utilisé."));User u=new User();u.setName(r.name);u.setEmail(email);u.setPassword(encoder.encode(r.password));u.setRole("SELLER".equalsIgnoreCase(r.role)?Role.SELLER:Role.BUYER);u.setEmailVerificationToken(UUID.randomUUID().toString());users.save(u);TransactionalEmailService mail=emailProvider==null?null:emailProvider.getIfAvailable();if(mail!=null)mail.verification(u.getEmail(),u.getEmailVerificationToken());return ResponseEntity.ok(new MessageResponse("Inscription réussie. Vérifiez votre email."));}
+ @PostMapping("/login") public ResponseEntity<?> login(@Valid @RequestBody LoginRequest r){String email=normaliser(r.email);if(attempts.blocked(email))return ResponseEntity.status(429).body(new MessageResponse("Trop de tentatives. Réessayez plus tard."));try{authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email,r.password));}catch(Exception e){attempts.failed(email);return ResponseEntity.status(401).body(new MessageResponse("Email ou mot de passe incorrect."));}attempts.succeeded(email);UserDetails d=userDetailsService.loadUserByUsername(email);User u=users.findByEmail(email).orElseThrow();events.audit(u,"AUTH_LOGIN","account="+u.getId());return ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(d),refreshTokens.issue(u,d),u.getName(),u.getEmail(),u.getRole().name()));}
  // La configuration de securite exige desormais une session sur ces routes.
  // Le controle reste ici : une regle de securite peut etre modifiee, une
  // NullPointerException ne doit pas en etre la consequence.
@@ -28,7 +38,7 @@ public class AuthController {
  // oracle d'enumeration des adresses inscrites.
  @PostMapping("/forgot-password") public ResponseEntity<?> forgot(@RequestBody Map<String,String> b){
   MessageResponse reponse=new MessageResponse("Si ce compte existe, un lien de réinitialisation vient d’être envoyé.");
-  User u=users.findByEmail(b.getOrDefault("email","")).orElse(null);
+  User u=users.findByEmail(normaliser(b.getOrDefault("email",""))).orElse(null);
   if(u==null)return ResponseEntity.ok(reponse);
   u.setPasswordResetToken(UUID.randomUUID().toString());u.setPasswordResetExpiresAt(LocalDateTime.now().plusMinutes(30));users.save(u);
   TransactionalEmailService mail=emailProvider==null?null:emailProvider.getIfAvailable();
