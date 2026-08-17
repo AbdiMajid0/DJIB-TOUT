@@ -113,14 +113,16 @@ Une pile locale complète existe désormais, **totalement séparée de Supabase*
 - **Backend local** : port **8083**, profil `local`, base
   `localhost:5432/djibtout` (à créer une fois :
   `psql -U postgres -c "CREATE DATABASE djibtout"`). Lancé par
-  **`backend/start-local.cmd`**, qui **ne charge pas le `.env`** — celui-ci
-  pointe sur Supabase et le profil `local` a `ddl-auto=update`. Flyway applique
-  les migrations et le `DataSeeder` crée les produits.
+  **`backend/start-local.ps1`**, qui **ne charge pas le `.env`** — celui-ci
+  pointe sur Supabase. Le profil `local` est en `ddl-auto=validate`, comme test,
+  staging et production : Flyway est la seule source du schéma. Les données de
+  démonstration sont sur le profil `seed`, à demander explicitement :
+  `.\start-local.ps1 -Seed`.
 - **Frontend local** : port **5181**, entrée `frontend-local` de
   `.claude/launch.json`. `vite.config.js` accepte maintenant
-  `VITE_PROXY_TARGET` (défaut inchangé : 8082).
+  `VITE_PROXY_TARGET` (défaut : **8083**, le port de `start-local.ps1`).
 - **Comptes de test** : `seller@test.com` / `password` est créé par le
-  `DataSeeder` (rôle SELLER). Un acheteur jetable a été inscrit via l'API :
+  `DataSeeder`, désormais sur le profil `seed` (rôle SELLER). Un acheteur jetable a été inscrit via l'API :
   `acheteur.test@local.invalid`. **Local uniquement.**
 
 ⚠️ Le health check `/actuator/health` répond DOWN en local : `MailHealthIndicator`
@@ -517,8 +519,10 @@ endroits avant de conclure qu'une route est absente.
 
 **Trois bases distinctes.** Supabase en production via `.env`,
 `localhost:5432/djibtout` que le profil `local` utilise par défaut, et
-`localhost:55432/djibtout_test` pour les tests. Le profil `local` a
-`ddl-auto=update` : **ne jamais le pointer sur Supabase.**
+`localhost:55432/djibtout_test` pour les tests. Les trois profils sont
+maintenant en `ddl-auto=validate` : **ne jamais pointer le profil `local` sur
+Supabase pour autant** — le profil `seed` y publierait de faux produits et un
+compte vendeur dont le mot de passe est dans le dépôt.
 
 **Lancer le backend avec `backend/start-supabase.cmd`**, jamais `mvnw` seul — le
 script charge le `.env` et règle le CORS pour les ports 5173, 5174 et 3000.

@@ -10,7 +10,7 @@ import java.util.List;
 // ailleurs qu'en developpement. Sans cette restriction il creait un
 // compte vendeur au mot de passe connu dans toute base vide, production
 // comprise.
-@Component @org.springframework.context.annotation.Profile("local")
+@Component @org.springframework.context.annotation.Profile("seed")
 public class HomeSectionSeeder implements CommandLineRunner {
     private final HomeSectionRepository repository;
     public HomeSectionSeeder(HomeSectionRepository repository){this.repository=repository;}
