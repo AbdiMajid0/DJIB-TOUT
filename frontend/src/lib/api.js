@@ -11,7 +11,19 @@ export async function api(path, options = {}, retry = true) {
   const headers = new Headers(options.headers || {})
   if (token) headers.set('Authorization', `Bearer ${token}`)
   if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
-  const response = await fetch(`${API_URL}${path}`, {...options, headers})
+  // fetch ne rejette que sur echec reseau : serveur arrete, DNS, port ferme.
+  // Le message natif (« Failed to fetch », « NetworkError ») remontait tel quel
+  // jusqu'a l'ecran de connexion, qui l'affichait a l'utilisateur. Il fallait
+  // lire le terminal de Vite pour comprendre que le backend n'etait pas lance.
+  let response
+  try {
+    response = await fetch(`${API_URL}${path}`, {...options, headers})
+  } catch (cause) {
+    const error = new Error('Le serveur est injoignable. Verifiez votre connexion, puis reessayez.')
+    error.status = 0
+    error.cause = cause
+    throw error
+  }
   const type = response.headers.get('content-type') || ''
   const data = response.status === 204 ? null : type.includes('json') ? await response.json() : await response.text()
   if (!response.ok) {
