@@ -65,6 +65,12 @@ public class SecurityConfig {
                 // client prend cela pour une session expiree et deconnecte.
                 // `server.error.include-message=never` en prod/staging : rien ne fuit.
                 .requestMatchers("/error").permitAll()
+                // Ces quatre routes exigent une session : declarees publiques, elles
+                // recevaient un Authentication nul et levaient une NullPointerException
+                // — un 500 la ou un 401 s'impose. Observe en production dans
+                // backend-run.out.log. Matchers plus specifiques d'abord : l'ordre
+                // de declaration decide.
+                .requestMatchers("/api/auth/me", "/api/auth/sessions", "/api/auth/sessions/**").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/telemetry/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
