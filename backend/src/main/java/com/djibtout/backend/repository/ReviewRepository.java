@@ -12,13 +12,18 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByProductOrderByCreatedAtDesc(Product product);
+    // Avis publics. `hidden` est nullable en base, sans valeur par defaut :
+    // tester l'egalite a false seule ecarterait toutes les lignes existantes.
+    // Meme convention que `Product.visible`.
+    @Query("SELECT r FROM Review r WHERE r.product = :product AND (r.hidden IS NULL OR r.hidden = false) ORDER BY r.createdAt DESC")
+    List<Review> findVisibleByProduct(@Param("product") Product product);
     List<Review> findByUserOrderByCreatedAtDesc(User user);
     org.springframework.data.domain.Page<Review> findByUserOrderByCreatedAtDesc(User user, org.springframework.data.domain.Pageable pageable);
-    long countByProduct(Product product);
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.product = :product AND (r.hidden IS NULL OR r.hidden = false)")
+    long countVisibleByProduct(@Param("product") Product product);
     List<Review> findByProductSellerIdOrderByCreatedAtDesc(Long sellerId);
     long countByProductSellerIdAndSellerResponseIsNull(Long sellerId);
 
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product = :product")
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.product = :product AND (r.hidden IS NULL OR r.hidden = false)")
     Double getAverageRatingForProduct(@Param("product") Product product);
 }

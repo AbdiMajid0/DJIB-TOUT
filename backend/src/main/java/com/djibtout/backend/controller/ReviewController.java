@@ -51,7 +51,7 @@ public class ReviewController {
         if (product == null) {
             return ResponseEntity.badRequest().body("Produit introuvable.");
         }
-        List<Review> reviews = reviewRepository.findByProductOrderByCreatedAtDesc(product);
+        List<Review> reviews = reviewRepository.findVisibleByProduct(product);
         return ResponseEntity.ok(reviews);
     }
 
@@ -64,7 +64,7 @@ public class ReviewController {
             return ResponseEntity.badRequest().body("Produit introuvable.");
         }
 
-        long count = reviewRepository.countByProduct(product);
+        long count = reviewRepository.countVisibleByProduct(product);
         Double avgRating = reviewRepository.getAverageRatingForProduct(product);
 
         return ResponseEntity.ok(new ReviewSummaryResponse(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0, count));

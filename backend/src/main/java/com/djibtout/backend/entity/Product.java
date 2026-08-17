@@ -22,8 +22,8 @@ public class Product {
     private Integer warrantyMonths;
     private Integer deliveryDays;
     private LocalDateTime flashSaleEndsAt;
-    @Formula("(select coalesce(avg(r.rating), 0) from reviews r where r.product_id = id)") private Double averageRating;
-    @Formula("(select count(r.id) from reviews r where r.product_id = id)") private Long reviewCount;
+    @Formula("(select coalesce(avg(r.rating), 0) from reviews r where r.product_id = id and (r.hidden is null or r.hidden = false))") private Double averageRating;
+    @Formula("(select count(r.id) from reviews r where r.product_id = id and (r.hidden is null or r.hidden = false))") private Long reviewCount;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

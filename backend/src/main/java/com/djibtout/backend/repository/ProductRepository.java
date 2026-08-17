@@ -33,7 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "(:sellerId IS NULL OR p.seller.id = :sellerId) AND " +
            "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
            "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
-           "(:minRating IS NULL OR (select coalesce(avg(r.rating),0) from Review r where r.product=p) >= :minRating) AND " +
+           "(:minRating IS NULL OR (select coalesce(avg(r.rating),0) from Review r where r.product=p and (r.hidden is null or r.hidden = false)) >= :minRating) AND " +
            "(:maxDeliveryDays IS NULL OR p.deliveryDays <= :maxDeliveryDays) AND " +
            "(:inStock IS NULL OR :inStock = false OR p.stockQuantity > 0) AND (p.visible IS NULL OR p.visible = true)")
     Page<Product> searchProducts(
