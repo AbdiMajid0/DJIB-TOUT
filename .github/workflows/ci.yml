@@ -25,6 +25,9 @@ jobs:
       # Pas d'etape de lint : aucun linter n'est installe dans le projet.
       # `npm run lint` faisait echouer ce job a chaque execution. A retablir
       # en meme temps qu'ESLint (ajout d'une devDependency + package-lock).
+      # Tests unitaires du panier (Vitest). Ils couvrent les regressions
+      # de cles/variantes corrigees dans lib/panier.js.
+      - run: npm run test
       - run: npm run build
 
   backend:
