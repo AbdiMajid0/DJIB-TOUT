@@ -28,3 +28,12 @@
 .footer-legal nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
 .footer-legal a { color: rgba(255, 255, 255, .6); text-decoration: none; }
 .footer-legal a:hover { color: #fff; text-decoration: underline; }
+
+/* « Supprimer » du panier etait un <a> sans href : ni focalisable au
+   clavier, ni annonce comme un bouton. Devenu <button>, il garde
+   l'apparence d'un lien. */
+.cart-remove {
+  background: none; border: 0; padding: 0; margin-top: 4px;
+  font: inherit; color: #b3261e; text-decoration: underline; cursor: pointer;
+  align-self: flex-start;
+}

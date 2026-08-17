@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import HomePage from "./App";
 import { api, imageUrl, money } from "./lib/api";
-import { useUser } from "./context/UserContext";
+import { cleArticle, useUser } from "./context/UserContext";
 import AccountDeletionPage from "./AccountDeletionPage";
 import ProductDetailPage from "./ProductDetailPage";
 import PublicStorePage from "./PublicStorePage";
@@ -695,33 +695,51 @@ function Cart() {
                   ? "Votre livraison standard est offerte."
                   : `Plus que ${money(LIVRAISON.seuilGratuit - subtotal)} pour profiter de la livraison gratuite.`}
               </div>
-              {cart.map(({ product: p, quantity }) => (
-                <article className="cart-row" key={p.id}>
-                  <div>
-                    {imageUrl(p) ? <img src={imageUrl(p)} alt="" /> : "📦"}
-                  </div>
-                  <span>
-                    <b>{p.name}</b>
-                    <small>
-                      {p.seller?.name || p.brand || "DJIB TOUT"} ·{" "}
-                      {p.stockQuantity > 0 ? "En stock" : "Rupture"}
-                    </small>
-                    <a onClick={() => updateCart(p.id, 0)}>Supprimer</a>
-                  </span>
-                  <select
-                    value={quantity}
-                    onChange={(e) => updateCart(p.id, Number(e.target.value))}
-                  >
-                    {Array.from(
-                      { length: Math.min(p.stockQuantity || 1, 10) },
-                      (_, i) => (
+              {cart.map((article) => {
+                const p = article.product;
+                const cle = cleArticle(article);
+                // Le stock disponible est celui de la variante choisie, pas celui
+                // du produit : les deux different des qu'un modele est epuise.
+                const stock = article.variant?.stockQuantity ?? p.stockQuantity;
+                const modele = article.variant
+                  ? Object.values(article.variant.attributes || {}).join(" · ") ||
+                    article.variant.sku
+                  : null;
+                return (
+                  <article className="cart-row" key={cle}>
+                    <div>
+                      {imageUrl(p) ? <img src={imageUrl(p)} alt="" /> : "📦"}
+                    </div>
+                    <span>
+                      <b>{p.name}</b>
+                      <small>
+                        {modele ? `${modele} · ` : ""}
+                        {p.seller?.name || p.brand || "DJIB TOUT"} ·{" "}
+                        {stock > 0 ? "En stock" : "Rupture"}
+                      </small>
+                      <button
+                        type="button"
+                        className="cart-remove"
+                        onClick={() => updateCart(cle, 0)}
+                      >
+                        Supprimer
+                      </button>
+                    </span>
+                    <select
+                      aria-label={`Quantité pour ${p.name}`}
+                      value={article.quantity}
+                      onChange={(e) => updateCart(cle, Number(e.target.value))}
+                    >
+                      {Array.from({ length: Math.min(stock || 1, 10) }, (_, i) => (
                         <option key={i + 1}>{i + 1}</option>
-                      ),
-                    )}
-                  </select>
-                  <strong>{money(Number(p.price) * quantity)}</strong>
-                </article>
-              ))}
+                      ))}
+                    </select>
+                    <strong>
+                      {money(Number(p.price) * article.quantity)}
+                    </strong>
+                  </article>
+                );
+              })}
             </section>
             <aside className="summary-new">
               <h2>Résumé</h2>
@@ -930,9 +948,13 @@ function Checkout() {
         <aside className="summary-new">
           <h2>Votre commande</h2>
           {cart.map((x) => (
-            <p key={x.product.id}>
+            // Meme cle que le panier : deux variantes d'un meme produit sont
+            // deux lignes distinctes, et key={x.product.id} les dupliquait.
+            <p key={cleArticle(x)}>
               <span>
                 {x.quantity}× {x.product.name}
+                {x.variant &&
+                  ` (${Object.values(x.variant.attributes || {}).join(" · ") || x.variant.sku})`}
               </span>
               <b>{money(Number(x.product.price) * x.quantity)}</b>
             </p>
@@ -3555,9 +3577,13 @@ function CheckoutV2() {
         <aside className="summary-new">
           <h2>Votre commande</h2>
           {cart.map((x) => (
-            <p key={x.product.id}>
+            // Meme cle que le panier : deux variantes d'un meme produit sont
+            // deux lignes distinctes, et key={x.product.id} les dupliquait.
+            <p key={cleArticle(x)}>
               <span>
                 {x.quantity}× {x.product.name}
+                {x.variant &&
+                  ` (${Object.values(x.variant.attributes || {}).join(" · ") || x.variant.sku})`}
               </span>
               <b>{money(Number(x.product.price) * x.quantity)}</b>
             </p>
