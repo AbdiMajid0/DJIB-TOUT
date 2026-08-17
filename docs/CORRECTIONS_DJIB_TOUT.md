@@ -11,7 +11,7 @@ Légende : 🔴 bloquant · 🟠 important · 🟡 à planifier · 🔵 confort 
 
 **Total : 178 points.**
 
-**Avancement au 17 août 2026 — 46 points corrigés, 132 restants.**
+**Avancement au 17 août 2026 — 48 points corrigés, 130 restants.**
 Les cases cochées ont été appliquées, compilées et poussées. Cinq points marqués ⏳
 sont entamés sans être clos. La connexion OAuth2 est désormais désactivée
 par défaut (`app.oauth2.enabled`) : aucun écran de retour n'existe côté navigateur. Un défaut absent de cet inventaire a été trouvé pendant
@@ -81,7 +81,7 @@ en `ddl-auto=validate` (test, staging, production).
 - [x] 🔴 **SEC-42** `WalletController:11` — `/wallet/topup` crédite sans paiement. Désactiver hors profil `local`.
 - [x] 🔴 **SEC-43** `PaymentController:10` — paiement simulé, toujours accepté. Isoler derrière une interface `PaymentGateway`.
 - [x] 🟠 **SEC-44** `application-prod.properties` — `app.cors.allowed-origins` non redéfini : repli sur les origines localhost si la variable d'env manque.
-- [ ] 🟠 **SEC-45** `application-local.properties` — `ddl-auto=update` en parallèle de Flyway. Passer à `validate`.
+- [x] 🟠 **SEC-45** `application-local.properties` — `ddl-auto=update` en parallèle de Flyway. Passer à `validate`. — *fait, et le semis est passé sur un profil `seed` distinct : la base locale est désormais bâtie par Flyway seul, comme les autres.*
 - [ ] 🟠 **SEC-46** `application.properties` — `spring.flyway.baseline-on-migrate=true` : risque de sauter des migrations sur une base non vide.
 - [ ] 🟠 **SEC-47** `.env` — mot de passe base, secret JWT et mot de passe SMTP réels dans un dossier **OneDrive synchronisé**. Correctement ignoré par git (vérifié), mais à déplacer hors du cloud.
 - [ ] 🟡 **SEC-48** `backend/Dockerfile`, `frontend/Dockerfile` — conteneurs exécutés en root. Ajouter un `USER` non privilégié.
@@ -219,7 +219,7 @@ en `ddl-auto=validate` (test, staging, production).
 - [x] 🟠 **BUG-14** `AuthController:18,19,20` — même NPE sur `/auth/sessions` (GET et DELETE), exposés en `permitAll`.
 - [ ] 🟠 **BUG-15** `LazyInitializationException` → 500 sur 7 endpoints (`open-in-view=false`, ni `@Transactional` ni `JOIN FETCH`) : `/orders/seller-orders`, `/admin/returns`, `/seller/orders/export`, `/seller/returns/export`, `/seller/analytics/export`, `/seller/dashboard`, `/seller/analytics`. — ⏳ *partiel : quelques endpoints annotés. Les 7 cas n'ont pas été repris un à un.*
 - [ ] 🟠 **BUG-16** `ProductController:156` — suppression d'un produit déjà commandé : `DataIntegrityViolationException` → 500 sans message exploitable.
-- [ ] 🟠 **BUG-17** `AuthController:13` — `findByEmail(r.email)` teste la casse brute mais enregistre en minuscules : `A@x.com` puis `a@X.com` passent le contrôle → violation de contrainte unique → 500.
+- [x] 🟠 **BUG-17** `AuthController:13` — `findByEmail(r.email)` teste la casse brute mais enregistre en minuscules : `A@x.com` puis `a@X.com` passent le contrôle → violation de contrainte unique → 500. — *une seule normalisation (`trim` + minuscules) sur l'inscription, la connexion, le compteur de tentatives et le mot de passe oublié.*
 - [ ] 🟠 **BUG-18** `PaymentController:10` — pas de verrou pessimiste sur `Wallet` : deux paiements concurrents lèvent `ObjectOptimisticLockingFailureException` non gérée → 500.
 - [ ] 🟡 **BUG-19** `WalletController:8` — création du portefeuille dans un `GET` sans transaction : deux requêtes concurrentes → violation de contrainte unique → 500.
 - [ ] 🟡 **BUG-20** `AdminController:25` — `POST /admin/coupons` sans `@Valid` : `code` nul → NPE → 500.
