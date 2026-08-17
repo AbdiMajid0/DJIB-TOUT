@@ -35,13 +35,19 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    // Aucun ecran « se connecter avec Google » n'existe cote navigateur : le
+    // parcours n'est declenchable que par appel direct a /oauth2/authorization/*.
+    // On ne l'expose donc que sur demande explicite, et jamais par defaut.
+    @Value("${app.oauth2.enabled:false}") private boolean oauth2Actif;
     private final RateLimitFilter rateLimitFilter;
     private final ValidatedSellerFilter validatedSellerFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailsService customUserDetailsService, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,RateLimitFilter rateLimitFilter,ValidatedSellerFilter validatedSellerFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailsService customUserDetailsService, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, OAuth2LoginFailureHandler oAuth2LoginFailureHandler,RateLimitFilter rateLimitFilter,ValidatedSellerFilter validatedSellerFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customUserDetailsService = customUserDetailsService;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
         this.rateLimitFilter=rateLimitFilter;
         this.validatedSellerFilter=validatedSellerFilter;
     }
@@ -91,13 +97,20 @@ public class SecurityConfig {
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request,response,exception)->{response.setStatus(401);response.setContentType("application/json");response.getWriter().write("{\"message\":\"Authentification requise.\"}");})
                 .accessDeniedHandler((request,response,exception)->{response.setStatus(403);response.setContentType("application/json");response.getWriter().write("{\"message\":\"Accès refusé.\"}");}))
-            .oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2LoginSuccessHandler)
-            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(jwtAuthenticationFilter, RateLimitFilter.class);
         http.addFilterAfter(validatedSellerFilter, JwtAuthenticationFilter.class);
+
+        // Enregistre apres coup : sans appel a oauth2Login, les filtres
+        // /oauth2/authorization/** et /login/oauth2/code/** ne sont pas montes
+        // du tout, et la surface d'attaque disparait avec eux.
+        if (oauth2Actif) {
+            log.info("Connexion OAuth2 activee.");
+            http.oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2LoginSuccessHandler)
+                .failureHandler(oAuth2LoginFailureHandler));
+        }
 
         return http.build();
     }
