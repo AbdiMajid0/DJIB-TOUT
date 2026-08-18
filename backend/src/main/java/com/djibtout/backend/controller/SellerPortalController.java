@@ -5,6 +5,8 @@ import com.djibtout.backend.repository.*;
 import com.djibtout.backend.service.SellerAccessService;
 import com.djibtout.backend.service.SellerEventService;
 import jakarta.validation.Valid;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -39,11 +41,12 @@ public class SellerPortalController {
     private final SellerSettlementRepository settlements;
     private final SellerEventService events;
     private final com.djibtout.backend.service.BuyerNotificationService buyerNotifications;
+    private final Validator validator;
 
     public SellerPortalController(UserRepository users, ProductRepository products, OrderRepository orders,
-                                  SellerStoreRepository stores, SellerFulfillmentRepository fulfillments, ProductQuestionRepository questions, ReviewRepository reviews, ReturnRequestRepository returnRequests, SellerAccessService access, SellerSettlementRepository settlements, SellerEventService events, com.djibtout.backend.service.BuyerNotificationService buyerNotifications) {
+                                  SellerStoreRepository stores, SellerFulfillmentRepository fulfillments, ProductQuestionRepository questions, ReviewRepository reviews, ReturnRequestRepository returnRequests, SellerAccessService access, SellerSettlementRepository settlements, SellerEventService events, com.djibtout.backend.service.BuyerNotificationService buyerNotifications, Validator validator) {
         this.users = users; this.products = products; this.orders = orders;
-        this.stores = stores; this.fulfillments = fulfillments; this.questions = questions; this.reviews = reviews; this.returnRequests=returnRequests; this.access=access;this.settlements=settlements;this.events=events;this.buyerNotifications=buyerNotifications;
+        this.stores = stores; this.fulfillments = fulfillments; this.questions = questions; this.reviews = reviews; this.returnRequests=returnRequests; this.access=access;this.settlements=settlements;this.events=events;this.buyerNotifications=buyerNotifications;this.validator=validator;
     }
 
     private User seller(Authentication authentication) {
@@ -179,7 +182,7 @@ public class SellerPortalController {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=commandes-djibtout.csv").contentType(MediaType.parseMediaType("text/csv;charset=UTF-8")).body(csv.toString());
     }
 
-    private String csvEscape(String value){return "\""+(value==null?"":value.replace("\"","\"\""))+"\"";}
+    private String csvEscape(String value){String safe=value==null?"":value;if(!safe.isEmpty()&&"=+-@\t\r\n".indexOf(safe.charAt(0))>=0)safe="'"+safe;return "\""+safe.replace("\"","\"\"")+"\"";}
 
     @Transactional(readOnly = true)
     @GetMapping(value="/returns/export", produces="text/csv")
@@ -216,19 +219,13 @@ public class SellerPortalController {
                 if (line.isBlank()) continue;
                 try {
                     List<String> values = parseCsv(line);
-                    Product product = new Product();
-                    product.setName(csvValue(values, positions, "name"));
-                    product.setDescription(csvValue(values, positions, "description"));
-                    product.setPrice(new BigDecimal(csvValue(values, positions, "price")));
-                    product.setStockQuantity(Integer.parseInt(csvValue(values, positions, "stockquantity")));
-                    product.setCategory(csvValue(values, positions, "category"));
-                    product.setBrand(csvOptional(values, positions, "brand"));
-                    String image = csvOptional(values, positions, "imageurl");
-                    if (image != null) product.setImages(List.of(image));
-                    if (product.getName().isBlank() || product.getCategory().isBlank() || product.getPrice().signum() < 0 || product.getStockQuantity() < 0)
-                        throw new IllegalArgumentException("valeurs invalides");
-                    product.setSeller(seller);
-                    imported.add(products.save(product));
+                    ProductController.ProductInput input = new ProductController.ProductInput(
+                            csvValue(values, positions, "name"), csvValue(values, positions, "description"),
+                            new BigDecimal(csvValue(values, positions, "price")),
+                            Integer.parseInt(csvValue(values, positions, "stockquantity")),
+                            csvValue(values, positions, "category"), importImages(csvOptional(values, positions, "imageurl")),
+                            null, null, csvOptional(values, positions, "brand"), null, null, null, null);
+                    imported.add(products.save(validatedImport(seller, input)));
                 } catch (Exception exception) {
                     errors.add("Ligne " + lineNumber + " : " + exception.getMessage());
                 }
@@ -255,12 +252,15 @@ public class SellerPortalController {
             for (String required : List.of("name","description","price","stockquantity","category")) if (!columns.containsKey(required)) return ResponseEntity.badRequest().body("Colonne obligatoire absente : " + required);
             for (int rowIndex = header.getRowNum() + 1; rowIndex <= sheet.getLastRowNum() && imported + errors.size() < 500; rowIndex++) {
                 Row row = sheet.getRow(rowIndex); if (row == null) continue;
-                try { Product product = new Product();
-                    product.setName(xlsxValue(row, columns, "name", formatter)); product.setDescription(xlsxValue(row, columns, "description", formatter));
-                    product.setPrice(new BigDecimal(xlsxValue(row, columns, "price", formatter).replace(',', '.'))); product.setStockQuantity(Integer.parseInt(xlsxValue(row, columns, "stockquantity", formatter)));
-                    product.setCategory(xlsxValue(row, columns, "category", formatter)); String brand=xlsxOptional(row,columns,"brand",formatter), image=xlsxOptional(row,columns,"imageurl",formatter);
-                    product.setBrand(brand); if(image!=null)product.setImages(List.of(image)); product.setSeller(seller);
-                    if(product.getPrice().signum()<0||product.getStockQuantity()<0)throw new IllegalArgumentException("prix ou stock invalide"); products.save(product); imported++;
+                try {
+                    String image=xlsxOptional(row,columns,"imageurl",formatter);
+                    ProductController.ProductInput input = new ProductController.ProductInput(
+                            xlsxValue(row, columns, "name", formatter), xlsxValue(row, columns, "description", formatter),
+                            new BigDecimal(xlsxValue(row, columns, "price", formatter).replace(',', '.')),
+                            Integer.parseInt(xlsxValue(row, columns, "stockquantity", formatter)),
+                            xlsxValue(row, columns, "category", formatter), importImages(image),
+                            null, null, xlsxOptional(row,columns,"brand",formatter), null, null, null, null);
+                    products.save(validatedImport(seller, input)); imported++;
                 } catch (Exception exception) { errors.add("Ligne " + (rowIndex + 1) + " : " + exception.getMessage()); }
             }
         } catch (Exception exception) { return ResponseEntity.badRequest().body("Lecture XLSX impossible : " + exception.getMessage()); }
@@ -269,6 +269,19 @@ public class SellerPortalController {
 
     private String xlsxValue(Row row, Map<String,Integer> columns, String key, DataFormatter formatter) { String value=xlsxOptional(row,columns,key,formatter); if(value==null)throw new IllegalArgumentException(key+" manquant"); return value; }
     private String xlsxOptional(Row row, Map<String,Integer> columns, String key, DataFormatter formatter) { Integer index=columns.get(key); if(index==null)return null; String value=formatter.formatCellValue(row.getCell(index, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)).trim(); return value.isBlank()?null:value; }
+
+    private List<String> importImages(String image) { return image == null ? null : List.of(image); }
+
+    private Product validatedImport(User seller, ProductController.ProductInput input) {
+        Set<ConstraintViolation<ProductController.ProductInput>> violations = validator.validate(input);
+        if (!violations.isEmpty())
+            throw new IllegalArgumentException("valeurs invalides : " + violations.stream().map(v -> v.getPropertyPath() + " " + v.getMessage()).sorted().reduce((a,b) -> a + ", " + b).orElse(""));
+        Product product = new Product();
+        product.setName(input.name().trim()); product.setDescription(input.description()); product.setPrice(input.price());
+        product.setStockQuantity(input.stockQuantity()); product.setCategory(input.category().trim());
+        product.setBrand(input.brand()); product.setImages(input.images()); product.setSeller(seller);
+        return product;
+    }
 
     private List<String> parseCsv(String line) {
         List<String> values = new ArrayList<>(); StringBuilder current = new StringBuilder(); boolean quoted = false;
