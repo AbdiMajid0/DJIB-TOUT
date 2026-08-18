@@ -24,6 +24,16 @@ class SellerAccessServiceTests{
   assertTrue(access.canManageCatalog(admin,productOf(seller)));
  }
 
+ @Test void productWithoutSellerCanOnlyBeManagedByAdmin(){
+  User staffUser=user(2);User seller=user(1);
+  SellerStore store=storeOf(seller);
+  when(staffRepo.findByUser(staffUser)).thenReturn(List.of(staff(staffUser,store,SellerStaffRole.STORE_MANAGER)));
+  Product product=productOf(null);
+  assertFalse(access.canManageCatalog(staffUser,product));
+  User admin=user(3);admin.setRole(Role.ADMIN);
+  assertTrue(access.canManageCatalog(admin,product));
+ }
+
  @Test void unrelatedSellerCannotManageAnotherSellersCatalog(){
   User seller=user(1);seller.setRole(Role.SELLER);
   User otherSeller=user(2);
