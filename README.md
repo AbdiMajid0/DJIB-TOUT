@@ -7,8 +7,7 @@ Marketplace composée d’un frontend Next.js, d’une API Spring Boot et de Pos
 Prérequis : Java 17+, Node.js 20+ et PostgreSQL 15+.
 
 ```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
+.\backend\start-local.ps1        # ajouter -Seed pour les données de démonstration
 ```
 
 ```powershell
@@ -17,7 +16,7 @@ npm ci
 npm run dev
 ```
 
-Le profil `local` est sélectionné par défaut. Il utilise `localhost:5432/djibtout`, le port API `8082` et un secret JWT réservé au développement.
+Le script `start-local.ps1` active le profil `local` et force le port API **8083**, celui que vise le proxy de développement de Vite (`vite.config.js`, surchargeable par `VITE_PROXY_TARGET`). Il utilise `localhost:5432/djibtout` et un secret JWT réservé au développement. Un lancement direct par `.\mvnw.cmd spring-boot:run` écoute sur 8082 : le frontend ne le verra pas sans ajuster `VITE_PROXY_TARGET`.
 
 ## Production avec Docker
 
