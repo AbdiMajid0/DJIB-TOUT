@@ -19,9 +19,11 @@ export async function api(path, options = {}, retry = true) {
   try {
     response = await fetch(`${API_URL}${path}`, {...options, headers})
   } catch (cause) {
-    const error = new Error('Le serveur est injoignable. Verifiez votre connexion, puis reessayez.')
+    // Une requete annulee par l'appelant (AbortController, navigation) n'est
+    // pas une panne : le signal d'origine doit remonter tel quel.
+    if (cause?.name === 'AbortError') throw cause
+    const error = new Error('Le serveur est injoignable. Verifiez votre connexion, puis reessayez.', { cause })
     error.status = 0
-    error.cause = cause
     throw error
   }
   const type = response.headers.get('content-type') || ''
@@ -35,7 +37,12 @@ export async function api(path, options = {}, retry = true) {
           localStorage.setItem('dt.accessToken', refreshed.token)
           localStorage.setItem('dt.refreshToken', refreshed.refreshToken)
           return api(path, options, false)
-        } catch { /* session invalid below */ }
+        } catch (error) {
+          // Une panne reseau pendant le rafraichissement ne dit rien de la
+          // validite de la session : elle remonte sans deconnecter.
+          if (error.status === 0 || error.name === 'AbortError') throw error
+          /* session invalid below */
+        }
       }
       window.dispatchEvent(new Event('dt:unauthorized'))
     }

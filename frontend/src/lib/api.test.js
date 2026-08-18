@@ -38,6 +38,31 @@ describe('api — pannes reseau', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(panne))
     await expect(api('/products')).rejects.toMatchObject({ cause: panne })
   })
+
+  it('laisse remonter une annulation telle quelle, sans message de panne', async () => {
+    const annulation = new DOMException('The user aborted a request.', 'AbortError')
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(annulation))
+    await expect(api('/products')).rejects.toBe(annulation)
+  })
+
+  it('ne deconnecte pas quand le rafraichissement echoue sur une panne reseau', async () => {
+    globalThis.localStorage = {
+      getItem: cle => (cle === 'dt.refreshToken' ? 'jeton' : null),
+      setItem: () => {},
+      removeItem: () => {},
+    }
+    const appel = vi.fn()
+      .mockResolvedValueOnce(reponse({ message: 'Session expirée.' }, { status: 401 }))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    vi.stubGlobal('fetch', appel)
+    // Les tests tournent sans DOM : un EventTarget suffit pour observer
+    // l'evenement de deconnexion que api.js publie sur window.
+    vi.stubGlobal('window', new EventTarget())
+    const deconnexion = vi.fn()
+    window.addEventListener('dt:unauthorized', deconnexion)
+    await expect(api('/products')).rejects.toMatchObject({ status: 0 })
+    expect(deconnexion).not.toHaveBeenCalled()
+  })
 })
 
 describe('api — reponses du serveur', () => {
