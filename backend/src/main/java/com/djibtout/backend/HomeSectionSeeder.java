@@ -7,10 +7,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 // Donnees de demonstration : ce composant ne doit jamais s'executer
-// ailleurs qu'en developpement. Sans cette restriction il creait un
-// compte vendeur au mot de passe connu dans toute base vide, production
-// comprise.
-@Component @org.springframework.context.annotation.Profile("seed")
+// ailleurs qu'en developpement. L'expression de profils exige `seed` ET
+// `local` : demander `seed` seul (ou avec `prod`) ne suffit pas, sinon un
+// compte vendeur au mot de passe connu apparaitrait dans toute base vide,
+// production comprise.
+@Component @org.springframework.context.annotation.Profile("seed & local")
 public class HomeSectionSeeder implements CommandLineRunner {
     private final HomeSectionRepository repository;
     public HomeSectionSeeder(HomeSectionRepository repository){this.repository=repository;}
