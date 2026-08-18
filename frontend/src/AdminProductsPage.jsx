@@ -1,9 +1,7 @@
 import React from 'react'
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Search } from 'lucide-react'
-import { api } from './lib/api'
+import { api, money } from './lib/api'
 import './admin-products.css'
-
-const money = (n) => new Intl.NumberFormat('fr-FR').format(Math.round(Number(n || 0))) + ' FDJ'
 
 // visible vaut null sur les produits anterieurs au champ : le backend traite
 // null comme visible (p.visible IS NULL OR p.visible = true), on fait pareil.

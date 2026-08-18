@@ -1,6 +1,6 @@
 import React from 'react'
 import { AlertCircle, Ban, CheckCircle2, RotateCcw, Search, ShieldCheck } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateLisible } from './lib/api'
 import './admin-users.css'
 
 const ROLES = {
@@ -51,11 +51,6 @@ export default function AdminUsersPage() {
     .filter((u) => !terme || `${u.name || ''} ${u.email || ''} ${u.phone || ''}`.toLowerCase().includes(terme))
 
   const compte = (cle) => (users || []).filter((u) => cle === 'ALL' || u.role === cle).length
-  const date = (v) => {
-    if (!v) return '—'
-    const d = new Date(v)
-    return isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
-  }
 
   return (
     <div className="admin-users">
@@ -125,7 +120,7 @@ export default function AdminUsersPage() {
                           : <span className="au-etat attente">E-mail non vérifié</span>}
                       </span>
                     </td>
-                    <td className="au-date">{date(u.createdAt)}</td>
+                    <td className="au-date">{dateLisible(u.createdAt)}</td>
                     <td className="au-actions">
                       {estAdmin ? (
                         // Le backend renvoie 409 sur un administrateur : autant

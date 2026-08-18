@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.*; import com.djibtout.backend.repository.UserRepository; import com.djibtout.backend.security.JwtUtil; import com.djibtout.backend.service.*;
 import jakarta.validation.Valid; import jakarta.validation.constraints.*;
@@ -56,10 +57,7 @@ public class AuthController {
   return ResponseEntity.ok(new MessageResponse("Mot de passe modifié. Toutes les sessions ont été déconnectées."));}
  // Renvoie null si aucune session exploitable : Authentication absent, jeton
  // anonyme, ou compte disparu depuis l'emission du jeton.
- private User compte(org.springframework.security.core.Authentication a){
-  if(a==null||!a.isAuthenticated()||"anonymousUser".equals(a.getName()))return null;
-  return users.findByEmail(a.getName()).orElse(null);
- }
+ private User compte(org.springframework.security.core.Authentication a){return CurrentUser.of(users,a);}
  private ResponseEntity<?> nonAuthentifie(){return ResponseEntity.status(401).body(new MessageResponse("Authentification requise."));}
 }
 class RegisterRequest{@NotBlank @Size(max=100) public String name;@NotBlank @Email public String email;@NotBlank @Size(min=8,max=72) public String password;public String role;}

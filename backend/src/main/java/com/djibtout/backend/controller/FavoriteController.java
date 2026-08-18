@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.Favorite;
 import com.djibtout.backend.entity.Product;
@@ -7,8 +8,6 @@ import com.djibtout.backend.repository.FavoriteRepository;
 import com.djibtout.backend.repository.ProductRepository;
 import com.djibtout.backend.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,12 +29,7 @@ public class FavoriteController {
     }
 
     private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return null;
-        }
-        String email = authentication.getName();
-        return userRepository.findByEmail(email).orElse(null);
+        return CurrentUser.ofContext(userRepository);
     }
 
     @Transactional(readOnly = true)

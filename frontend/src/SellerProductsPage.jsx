@@ -11,7 +11,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { api } from "./lib/api";
+import {api,money} from './lib/api';
 import "./seller-products.css";
 import MediaUploader from "./MediaUploader";
 import SellerVariantsModal from "./SellerVariantsModal";
@@ -29,8 +29,6 @@ const empty = {
   imageUrl: "",
   visible: true,
 };
-const money = (n) =>
-  new Intl.NumberFormat("fr-FR").format(Number(n || 0)) + " FDJ";
 export default function SellerProductsPage() {
   const [items, setItems] = React.useState([]),
     [query, setQuery] = React.useState(""),

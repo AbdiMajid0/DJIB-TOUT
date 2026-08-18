@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 import com.djibtout.backend.service.SellerEventService;
 
 import com.djibtout.backend.entity.*;import com.djibtout.backend.repository.*;import com.djibtout.backend.service.SellerAccessService;import jakarta.validation.Valid;import jakarta.validation.constraints.*;
@@ -9,7 +10,7 @@ import java.math.BigDecimal;import java.util.List;
 public class ReturnController {
     private final ReturnRequestRepository returns; private final OrderRepository orders; private final UserRepository users; private final SellerAccessService access;private final SellerEventService events;private final com.djibtout.backend.service.BuyerNotificationService buyerNotifications;
     public ReturnController(ReturnRequestRepository returns,OrderRepository orders,UserRepository users,SellerAccessService access,SellerEventService events,com.djibtout.backend.service.BuyerNotificationService buyerNotifications){this.returns=returns;this.orders=orders;this.users=users;this.access=access;this.events=events;this.buyerNotifications=buyerNotifications;}
-    private User current(Authentication a){return a==null?null:users.findByEmail(a.getName()).orElse(null);}
+    private User current(Authentication a){return CurrentUser.of(users,a);}
 
     /**
      * L'entite ne peut pas etre serialisee telle quelle : `orderItem.product`

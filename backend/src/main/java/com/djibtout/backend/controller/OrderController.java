@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.Order;
 import com.djibtout.backend.entity.OrderItem;
@@ -21,8 +22,6 @@ import com.djibtout.backend.repository.ProductVariantRepository;
 import com.djibtout.backend.entity.ProductVariant;
 import com.djibtout.backend.service.SellerEventService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -58,19 +57,13 @@ public class OrderController {
         this.events=events;
     }
 
+    private User current() { return CurrentUser.ofContext(userRepository); }
+
     @Transactional
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestHeader(value="Idempotency-Key",required=false) String idempotencyKey,@Valid @RequestBody CreateOrderRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Vous devez être connecté pour passer une commande.");
-        }
-
-        String email = authentication.getName();
-        User buyer = userRepository.findByEmail(email).orElse(null);
-        if (buyer == null) {
-            return ResponseEntity.status(401).body("Utilisateur introuvable.");
-        }
+        User buyer = current();
+        if (buyer == null) return ResponseEntity.status(401).body("Vous devez être connecté pour passer une commande.");
         if(idempotencyKey==null||idempotencyKey.isBlank()||idempotencyKey.length()>80)return ResponseEntity.badRequest().body("Clé d’idempotence requise.");
         var existing=orderRepository.findByBuyerAndIdempotencyKey(buyer,idempotencyKey.trim());
         if(existing.isPresent()){Order value=existing.get();return ResponseEntity.ok(new OrderResponse(true,"Commande déjà créée.",value.getId(),value.getTotalAmount(),value.getSubtotalAmount(),value.getDiscountAmount(),value.getDeliveryFee()));}
@@ -174,16 +167,8 @@ public class OrderController {
     public ResponseEntity<?> getMyOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Vous devez être connecté.");
-        }
-
-        String email = authentication.getName();
-        User buyer = userRepository.findByEmail(email).orElse(null);
-        if (buyer == null) {
-            return ResponseEntity.status(401).body("Utilisateur introuvable.");
-        }
+        User buyer = current();
+        if (buyer == null) return ResponseEntity.status(401).body("Vous devez être connecté.");
 
         return ResponseEntity.ok(orderRepository
                 .findByBuyerOrderByCreatedAtDesc(buyer, pageRequest(page, size))
@@ -241,14 +226,8 @@ public class OrderController {
     @Transactional(readOnly = true)
     @GetMapping("/seller-orders")
     public ResponseEntity<?> getSellerOrders() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Vous devez être connecté.");
-        }
-
-        String email = authentication.getName();
-        User seller = userRepository.findByEmail(email).orElse(null);
-        if (seller == null) return ResponseEntity.status(401).body("Utilisateur introuvable.");
+        User seller = current();
+        if (seller == null) return ResponseEntity.status(401).body("Vous devez être connecté.");
 
         List<Order> orders = orderRepository.findOrdersBySellerId(seller.getId());
         return ResponseEntity.ok(orders);
@@ -257,13 +236,8 @@ public class OrderController {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getOrderById(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Vous devez être connecté.");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null) return ResponseEntity.status(401).body("Utilisateur introuvable.");
+        User user = current();
+        if (user == null) return ResponseEntity.status(401).body("Vous devez être connecté.");
 
         Order order = orderRepository.findById(id).orElse(null);
         if (order == null) return ResponseEntity.status(404).body("Commande introuvable.");
@@ -283,13 +257,8 @@ public class OrderController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Vous devez être connecté.");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null) return ResponseEntity.status(401).body("Utilisateur introuvable.");
+        User user = current();
+        if (user == null) return ResponseEntity.status(401).body("Vous devez être connecté.");
 
         Order order = orderRepository.findById(id).orElse(null);
         if (order == null) return ResponseEntity.status(404).body("Commande introuvable.");
@@ -314,13 +283,8 @@ public class OrderController {
 
     @PostMapping("/{id}/cancel")
     public ResponseEntity<?> cancelOrder(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Vous devez être connecté.");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null) return ResponseEntity.status(401).body("Utilisateur introuvable.");
+        User user = current();
+        if (user == null) return ResponseEntity.status(401).body("Vous devez être connecté.");
 
         Order order = orderRepository.findById(id).orElse(null);
         if (order == null) return ResponseEntity.status(404).body("Commande introuvable.");

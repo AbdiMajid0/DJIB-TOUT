@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.*;
 import com.djibtout.backend.repository.*;
@@ -64,7 +65,7 @@ public class ProductVariantController {
         variant.setSku(input.sku().trim()); variant.setPrice(input.price()); variant.setStockQuantity(input.stockQuantity());
         variant.setActive(input.active()); variant.setAttributes(input.attributes()); variant.setImages(input.images());
     }
-    private User current(Authentication authentication) { return authentication == null ? null : users.findByEmail(authentication.getName()).orElse(null); }
+    private User current(Authentication authentication) { return CurrentUser.of(users, authentication); }
     private Product ownedProduct(Long id, Authentication authentication) {
         User user = current(authentication); Product product = products.findById(id).orElse(null);
         return user != null && product != null && (user.getRole() == Role.ADMIN || product.getSeller() != null && product.getSeller().getId().equals(user.getId())) ? product : null;

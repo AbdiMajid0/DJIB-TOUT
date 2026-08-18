@@ -1,6 +1,6 @@
 import React from 'react'
 import { AlertCircle, CheckCircle2, Pencil, Plus, Trash2, X } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateCourte } from './lib/api'
 import './admin-config.css'
 
 // L'entite Campaign est stricte : title, subtitle, badge et linkUrl sont
@@ -11,12 +11,6 @@ const DEGRADE_DEFAUT = 'from-[#063b8f] via-[#0052cc] to-[#2c7ef8]'
 const vide = {
   title: '', subtitle: '', badge: '', linkUrl: '', imageUrl: '',
   gradient: DEGRADE_DEFAUT, active: true, displayOrder: 0, startsAt: '', endsAt: '',
-}
-
-const dateCourte = (v) => {
-  if (!v) return null
-  const d = new Date(v)
-  return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleDateString('fr-FR')
 }
 
 // <input type="datetime-local"> attend AAAA-MM-JJTHH:MM sans fuseau.
@@ -233,7 +227,7 @@ export default function AdminCampaignsPage() {
                     </th>
                     <td className="cfg-mono">{c.linkUrl || <span className="cfg-gris">—</span>}</td>
                     <td>
-                      {dateCourte(c.startsAt) || 'Immédiat'} → {dateCourte(c.endsAt) || 'sans fin'}
+                      {dateCourte(c.startsAt, null) || 'Immédiat'} → {dateCourte(c.endsAt, null) || 'sans fin'}
                     </td>
                     <td>{c.displayOrder}</td>
                     <td><span className={`cfg-etat ${classe}`}>{libelle}</span></td>

@@ -1,10 +1,11 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 import com.djibtout.backend.entity.*;import com.djibtout.backend.repository.*;import jakarta.validation.Valid;import jakarta.validation.constraints.*;import org.springframework.http.*;import org.springframework.security.core.Authentication;import org.springframework.security.crypto.password.PasswordEncoder;import org.springframework.transaction.annotation.Transactional;import org.springframework.web.bind.annotation.*;import java.util.*;
 @RestController @RequestMapping("/api/account") public class AccountController{
  private final UserRepository users;private final OrderRepository orders;private final AddressRepository addresses;private final PasswordEncoder encoder;
  private final com.djibtout.backend.service.RefreshTokenService refreshTokens;private final com.djibtout.backend.security.JwtUtil jwt;private final org.springframework.security.core.userdetails.UserDetailsService userDetails;
  public AccountController(UserRepository u,OrderRepository o,AddressRepository a,PasswordEncoder e,com.djibtout.backend.service.RefreshTokenService rt,com.djibtout.backend.security.JwtUtil j,org.springframework.security.core.userdetails.UserDetailsService ud){users=u;orders=o;addresses=a;encoder=e;refreshTokens=rt;jwt=j;userDetails=ud;}
- private User user(Authentication auth){return auth==null?null:users.findByEmail(auth.getName()).orElse(null);}
+ private User user(Authentication auth){return CurrentUser.of(users,auth);}
  @GetMapping("/profile") public ResponseEntity<?> profile(Authentication auth){User u=user(auth);return u==null?ResponseEntity.status(401).build():ResponseEntity.ok(view(u));}
  @PutMapping("/profile") public ResponseEntity<?> update(Authentication auth,@Valid @RequestBody ProfileInput input){User u=user(auth);if(u==null)return ResponseEntity.status(401).build();u.setName(input.name().trim());u.setPhone(input.phone());u.setBirthDate(input.birthDate());u.setPreferredLanguage(input.preferredLanguage()==null?"fr":input.preferredLanguage());u.setDeliveryInstructions(input.deliveryInstructions());users.save(u);return ResponseEntity.ok(view(u));}
  @PutMapping("/preferences") public ResponseEntity<?> preferences(Authentication auth,@RequestBody PreferencesInput input){User u=user(auth);if(u==null)return ResponseEntity.status(401).build();u.setOrderNotifications(input.orderNotifications());u.setPromotionNotifications(input.promotionNotifications());users.save(u);return ResponseEntity.ok(view(u));}

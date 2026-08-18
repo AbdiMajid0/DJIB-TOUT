@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.BuyerNotification;
 import com.djibtout.backend.entity.User;
@@ -20,7 +21,7 @@ public class BuyerNotificationController {
     }
 
     private User current(Authentication a) {
-        return a == null ? null : users.findByEmail(a.getName()).orElse(null);
+        return CurrentUser.of(users, a);
     }
 
     /** Vue compacte : `user` ne doit jamais partir dans la reponse. */

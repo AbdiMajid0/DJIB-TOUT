@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.Product;
 import com.djibtout.backend.entity.Role;
@@ -9,8 +10,6 @@ import com.djibtout.backend.service.SellerAccessService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,12 +35,7 @@ public class ProductController {
     }
 
     private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return null;
-        }
-        String email = authentication.getName();
-        return userRepository.findByEmail(email).orElse(null);
+        return CurrentUser.ofContext(userRepository);
     }
 
     @GetMapping

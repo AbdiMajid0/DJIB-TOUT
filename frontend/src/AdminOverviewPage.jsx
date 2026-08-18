@@ -1,11 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, ArrowRight, ClipboardList, CreditCard, Store, Users } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateLisible, money, nombre } from './lib/api'
 import './admin-overview.css'
-
-const money = (n) => new Intl.NumberFormat('fr-FR').format(Math.round(Number(n || 0))) + ' FDJ'
-const nombre = (n) => new Intl.NumberFormat('fr-FR').format(Number(n || 0))
 
 const STATUTS = {
   PENDING: ['En attente', 'attente'],
@@ -56,12 +53,6 @@ export default function AdminOverviewPage() {
   const recentes = [...orders]
     .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
     .slice(0, 6)
-
-  const date = (v) => {
-    if (!v) return '—'
-    const d = new Date(v)
-    return isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
-  }
 
   return (
     <div className="admin-overview">
@@ -126,7 +117,7 @@ export default function AdminOverviewPage() {
                   return (
                     <tr key={o.id}>
                       <th scope="row">#DT-{o.id}</th>
-                      <td>{date(o.createdAt)}</td>
+                      <td>{dateLisible(o.createdAt)}</td>
                       <td>{o.paymentMethod || '—'}</td>
                       <td className="ao-montant">{money(o.totalAmount)}</td>
                       <td><span className={`ao-statut ${classe}`}>{label}</span></td>

@@ -49,7 +49,52 @@ export async function api(path, options = {}, retry = true) {
   return data
 }
 
-export const money = value => `${new Intl.NumberFormat('fr-FR').format(Number(value || 0))} FDJ`
+export const nombre = value => new Intl.NumberFormat('fr-FR').format(Number(value || 0))
+// Le franc djiboutien n'a pas de subdivision : arrondir evite « 1 500,333 FDJ »
+// sur les montants issus d'un calcul de commission ou de remise.
+export const money = value => `${nombre(Math.round(Number(value || 0)))} FDJ`
+
+// Les dates arrivent en texte depuis l'API : une valeur absente ou illisible
+// donnait « Invalid Date » dans les tableaux. On rend le tiret cadratin utilise
+// partout ailleurs comme repli.
+const dateValide = value => {
+  if (!value) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+export const dateCourte = (value, repli = '—') =>
+  dateValide(value)?.toLocaleDateString('fr-FR') || repli
+export const dateLisible = (value, repli = '—') =>
+  dateValide(value)?.toLocaleDateString('fr-FR', {day:'2-digit', month:'short', year:'numeric'}) || repli
+export const dateHeure = (value, repli = '—') =>
+  dateValide(value)?.toLocaleString('fr-FR') || repli
+
+// Un lien direct vers un export renverrait 401 : le jeton vit dans
+// localStorage, pas dans un cookie. On telecharge donc le fichier via fetch
+// puis on declenche l'enregistrement depuis le blob obtenu.
+export function saveBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function apiBlob(path) {
+  const token = localStorage.getItem('dt.accessToken')
+  const response = await fetch(`${API_URL}${path}`, {headers: token ? {Authorization:`Bearer ${token}`} : {}})
+  if (!response.ok) {
+    const error = new Error(`Erreur ${response.status}`)
+    error.status = response.status
+    throw error
+  }
+  return response.blob()
+}
+
+export async function download(path, filename) {
+  saveBlob(await apiBlob(path), filename)
+}
 // `images` peut contenir n'importe quoi : emoji du jeu de demonstration, texte
 // saisi par un vendeur. Rendre <img src="emoji"> affiche une image cassee, la
 // ou une liste vide aurait affiche le repli prevu par l'interface. On ne retient

@@ -1,6 +1,6 @@
 import React from 'react'
 import { AlertCircle, Ban, CheckCircle2, FileText, Hourglass, RotateCcw, Store, X } from 'lucide-react'
-import { api } from './lib/api'
+import { api, apiBlob } from './lib/api'
 import './admin-sellers.css'
 
 const FILTRES = [
@@ -71,16 +71,11 @@ export default function AdminSellersPage() {
   async function ouvrirDocument(doc) {
     setErreur('')
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`/api/seller/documents/${doc.id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error(`Document indisponible (${res.status})`)
-      const url = URL.createObjectURL(await res.blob())
+      const url = URL.createObjectURL(await apiBlob(`/seller/documents/${doc.id}`))
       window.open(url, '_blank', 'noopener')
       setTimeout(() => URL.revokeObjectURL(url), 60000)
     } catch (e) {
-      setErreur(e.message)
+      setErreur(e.status ? `Document indisponible (${e.status})` : e.message)
     }
   }
 

@@ -1,18 +1,12 @@
 import React from 'react'
 import { AlertCircle, RefreshCw, Search } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateHeure } from './lib/api'
 import './admin-config.css'
 
 // L'API renvoie l'acteur sous forme d'entite User complete. On n'affiche que le
 // nom et l'e-mail : le reste (telephone, date de naissance, preferences) n'a
 // rien a faire dans un journal.
 const acteur = (l) => l.actor?.name || l.actor?.email || 'Compte supprimé'
-
-const dateHeure = (v) => {
-  if (!v) return '—'
-  const d = new Date(v)
-  return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString('fr-FR')
-}
 
 export default function AdminAuditPage() {
   const [logs, setLogs] = React.useState(null)

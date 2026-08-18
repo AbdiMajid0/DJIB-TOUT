@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 import com.djibtout.backend.entity.*; import com.djibtout.backend.repository.*;
 import jakarta.validation.Valid; import jakarta.validation.constraints.*;
 import org.springframework.http.*; import org.springframework.security.core.Authentication; import org.springframework.transaction.annotation.Transactional; import org.springframework.web.bind.annotation.*;
@@ -7,7 +8,7 @@ import java.util.*;
 public class AddressController {
  private final AddressRepository addresses; private final UserRepository users;
  public AddressController(AddressRepository a,UserRepository u){addresses=a;users=u;}
- private User user(Authentication a){return a==null?null:users.findByEmail(a.getName()).orElse(null);}
+ private User user(Authentication a){return CurrentUser.of(users,a);}
  @GetMapping public List<Address> list(Authentication a){return addresses.findByUserOrderByIsDefaultDescIdDesc(user(a));}
  @PostMapping @Transactional public ResponseEntity<?> create(Authentication a,@Valid @RequestBody AddressRequest r){User u=user(a); Address x=new Address(); apply(x,r); x.setUser(u); normalizeDefault(u,x); return ResponseEntity.status(201).body(addresses.save(x));}
  @PutMapping("/{id}") @Transactional public ResponseEntity<?> update(Authentication a,@PathVariable Long id,@Valid @RequestBody AddressRequest r){User u=user(a); Address x=addresses.findById(id).orElse(null); if(x==null)return ResponseEntity.notFound().build(); if(!x.getUser().getId().equals(u.getId()))return ResponseEntity.status(403).body("Accès refusé."); apply(x,r); normalizeDefault(u,x); return ResponseEntity.ok(addresses.save(x));}
