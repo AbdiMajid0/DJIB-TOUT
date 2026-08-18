@@ -1,5 +1,6 @@
 backups/
 *.dump
+*_pwd.sql
 .env
 .env.*
 !.env.example

@@ -11,14 +11,14 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.0",
-    "@vitejs/plugin-react": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "latest",
+    "@vitejs/plugin-react": "6.0.5",
+    "lucide-react": "1.31.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-router-dom": "7.18.2",
     "tailwindcss": "^4.1.0",
-    "typescript": "latest",
-    "vite": "latest"
+    "typescript": "7.0.2",
+    "vite": "8.2.1"
   },
   "devDependencies": {
     "vitest": "^4.1.10"
