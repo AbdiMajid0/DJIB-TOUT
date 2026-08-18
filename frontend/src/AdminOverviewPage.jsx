@@ -22,10 +22,13 @@ export default function AdminOverviewPage() {
   const [erreur, setErreur] = React.useState('')
 
   React.useEffect(() => {
+    // Les trois appels alimentent des totaux. Un repli sur [] transformait une
+    // requete en echec en « 0 utilisateur », « aucune boutique en attente » :
+    // un tableau de bord faux est plus dangereux qu'un message d'erreur.
     Promise.all([
-      api('/admin/users').catch(() => []),
-      api('/admin/orders').catch(() => []),
-      api('/admin/seller-stores').catch(() => []),
+      api('/admin/users'),
+      api('/admin/orders'),
+      api('/admin/seller-stores'),
     ])
       .then(([users, orders, stores]) => setData({
         users: Array.isArray(users) ? users : [],

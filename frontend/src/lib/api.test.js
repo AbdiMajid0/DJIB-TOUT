@@ -72,6 +72,65 @@ describe('api — reponses du serveur', () => {
   })
 })
 
+describe('api — rafraichissement de session', () => {
+  let stockage
+
+  beforeEach(() => {
+    stockage = { 'dt.accessToken': 'perime', 'dt.refreshToken': 'rafraichissement' }
+    globalThis.localStorage = {
+      getItem: (cle) => (cle in stockage ? stockage[cle] : null),
+      setItem: (cle, valeur) => { stockage[cle] = valeur },
+      removeItem: (cle) => { delete stockage[cle] },
+    }
+  })
+
+  const fenetre = () => {
+    const dispatchEvent = vi.fn()
+    vi.stubGlobal('window', { dispatchEvent })
+    return dispatchEvent
+  }
+
+  it('rejoue la requete apres un rafraichissement reussi', async () => {
+    fenetre()
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(reponse({ message: 'Jeton expire.' }, { status: 401 }))
+      .mockResolvedValueOnce(reponse({ token: 'neuf', refreshToken: 'neuf-r' }))
+      .mockResolvedValueOnce(reponse([{ id: 1 }])))
+    await expect(api('/orders')).resolves.toEqual([{ id: 1 }])
+    expect(stockage['dt.accessToken']).toBe('neuf')
+  })
+
+  // Le defaut d origine : l echec du rafraichissement etait avale, l evenement
+  // de deconnexion partait quand meme, et une coupure reseau de quelques
+  // secondes vidait la session de l utilisateur.
+  it('ne deconnecte pas quand le rafraichissement echoue faute de reseau', async () => {
+    const dispatchEvent = fenetre()
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(reponse({ message: 'Jeton expire.' }, { status: 401 }))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch')))
+    await expect(api('/orders')).rejects.toMatchObject({ status: 0 })
+    expect(dispatchEvent).not.toHaveBeenCalled()
+  })
+
+  it('ne deconnecte pas quand le serveur de rafraichissement est en panne', async () => {
+    const dispatchEvent = fenetre()
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(reponse({ message: 'Jeton expire.' }, { status: 401 }))
+      .mockResolvedValueOnce(reponse('', { status: 500, json: false })))
+    await expect(api('/orders')).rejects.toMatchObject({ status: 500 })
+    expect(dispatchEvent).not.toHaveBeenCalled()
+  })
+
+  it('deconnecte quand le serveur refuse le jeton de rafraichissement', async () => {
+    const dispatchEvent = fenetre()
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(reponse({ message: 'Jeton expire.' }, { status: 401 }))
+      .mockResolvedValueOnce(reponse({ message: 'Refresh token invalide.' }, { status: 401 })))
+    await expect(api('/orders')).rejects.toMatchObject({ message: 'Jeton expire.', status: 401 })
+    expect(dispatchEvent).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('imageUrl', () => {
   // Le defaut d origine : le jeu de demonstration ecrivait des emojis dans
   // `images`, et <img src="🛋️"> affichait une image cassee — pire qu une liste

@@ -27,6 +27,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/seller")
 public class SellerPortalController {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SellerPortalController.class);
+
     private final UserRepository users;
     private final ProductRepository products;
     private final OrderRepository orders;
@@ -229,13 +231,19 @@ public class SellerPortalController {
                         throw new IllegalArgumentException("valeurs invalides");
                     product.setSeller(seller);
                     imported.add(products.save(product));
-                } catch (Exception exception) {
-                    errors.add("Ligne " + lineNumber + " : " + exception.getMessage());
+                } catch (IllegalArgumentException exception) {
+                    // Seules les erreurs de la ligne elle-meme sont reportees a
+                    // l'importateur. Un catch(Exception) avalait aussi les
+                    // echecs d'ecriture : la transaction etait alors marquee
+                    // pour annulation, la reponse annoncait « N importes », et
+                    // aucun produit n'existait apres validation.
+                    errors.add("Ligne " + lineNumber + " : " + message(exception));
                 }
                 if (imported.size() + errors.size() >= 500) break;
             }
-        } catch (Exception exception) {
-            return ResponseEntity.badRequest().body("Lecture CSV impossible : " + exception.getMessage());
+        } catch (java.io.IOException exception) {
+            log.warn("Import CSV illisible (vendeur={})", seller.getId(), exception);
+            return ResponseEntity.badRequest().body("Lecture CSV impossible : fichier illisible ou encodage non pris en charge.");
         }
         return ResponseEntity.ok(Map.of("imported", imported.size(), "rejected", errors.size(), "errors", errors.stream().limit(20).toList()));
     }
@@ -261,10 +269,21 @@ public class SellerPortalController {
                     product.setCategory(xlsxValue(row, columns, "category", formatter)); String brand=xlsxOptional(row,columns,"brand",formatter), image=xlsxOptional(row,columns,"imageurl",formatter);
                     product.setBrand(brand); if(image!=null)product.setImages(List.of(image)); product.setSeller(seller);
                     if(product.getPrice().signum()<0||product.getStockQuantity()<0)throw new IllegalArgumentException("prix ou stock invalide"); products.save(product); imported++;
-                } catch (Exception exception) { errors.add("Ligne " + (rowIndex + 1) + " : " + exception.getMessage()); }
+                } catch (IllegalArgumentException exception) { errors.add("Ligne " + (rowIndex + 1) + " : " + message(exception)); }
             }
-        } catch (Exception exception) { return ResponseEntity.badRequest().body("Lecture XLSX impossible : " + exception.getMessage()); }
+        } catch (java.io.IOException | IllegalArgumentException exception) {
+            // POI leve une UnsupportedFileFormatException (donc une
+            // IllegalArgumentException) sur un fichier qui n'est pas un classeur.
+            log.warn("Import XLSX illisible (vendeur={})", seller.getId(), exception);
+            return ResponseEntity.badRequest().body("Lecture XLSX impossible : fichier illisible ou format non pris en charge.");
+        }
         return ResponseEntity.ok(Map.of("imported", imported, "rejected", errors.size(), "errors", errors.stream().limit(20).toList()));
+    }
+
+    /** getMessage() est nul sur plusieurs exceptions de conversion : « Ligne 4 : null » n'aide personne. */
+    private static String message(Exception exception) {
+        String message = exception.getMessage();
+        return message == null || message.isBlank() ? "valeurs invalides" : message;
     }
 
     private String xlsxValue(Row row, Map<String,Integer> columns, String key, DataFormatter formatter) { String value=xlsxOptional(row,columns,key,formatter); if(value==null)throw new IllegalArgumentException(key+" manquant"); return value; }

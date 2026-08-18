@@ -35,7 +35,14 @@ export async function api(path, options = {}, retry = true) {
           localStorage.setItem('dt.accessToken', refreshed.token)
           localStorage.setItem('dt.refreshToken', refreshed.refreshToken)
           return api(path, options, false)
-        } catch { /* session invalid below */ }
+        } catch (refreshError) {
+          // Un rafraichissement qui echoue faute de reseau (status 0) ou parce
+          // que le serveur est en panne (5xx) ne prouve rien sur la session :
+          // l'erreur etait avalee, l'evenement dt:unauthorized partait quand
+          // meme, et une coupure de quelques secondes deconnectait
+          // l'utilisateur en pleine saisie. On remonte alors la vraie cause.
+          if (!refreshError.status || refreshError.status >= 500) throw refreshError
+        }
       }
       window.dispatchEvent(new Event('dt:unauthorized'))
     }
