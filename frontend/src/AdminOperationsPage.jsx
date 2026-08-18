@@ -1,9 +1,7 @@
 import React from 'react'
 import { AlertCircle, CheckCircle2, ClipboardList, Undo2 } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateLisible, money } from './lib/api'
 import './admin-operations.css'
-
-const money = (n) => new Intl.NumberFormat('fr-FR').format(Math.round(Number(n || 0))) + ' FDJ'
 
 const STATUTS_COMMANDE = {
   PENDING: ['En attente', 'attente'],
@@ -19,12 +17,6 @@ const STATUTS_RETOUR = {
   REJECTED: ['Refusé', 'annulee'],
   RECEIVED: ['Reçu', 'expediee'],
   REFUNDED: ['Remboursé', 'livree'],
-}
-
-const date = (v) => {
-  if (!v) return '—'
-  const d = new Date(v)
-  return isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function AdminOperationsPage() {
@@ -147,7 +139,7 @@ export default function AdminOperationsPage() {
                         <small>{x.buyer?.name || x.buyer?.email || 'Client inconnu'}</small>
                       )}
                     </th>
-                    <td className="op-date">{date(x.createdAt)}</td>
+                    <td className="op-date">{dateLisible(x.createdAt)}</td>
                     {onglet === 'commandes' ? (
                       <>
                         <td className="op-adresse">{x.deliveryAddress || '—'}</td>

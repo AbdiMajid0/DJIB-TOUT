@@ -1,4 +1,5 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 
 import com.djibtout.backend.entity.*;
 import com.djibtout.backend.repository.*;
@@ -46,10 +47,9 @@ public class SellerPortalController {
         this.stores = stores; this.fulfillments = fulfillments; this.questions = questions; this.reviews = reviews; this.returnRequests=returnRequests; this.access=access;this.settlements=settlements;this.events=events;this.buyerNotifications=buyerNotifications;
     }
 
-    private User seller(Authentication authentication) {
-        User user = authentication == null ? null : users.findByEmail(authentication.getName()).orElse(null);
-        return user != null && (user.getRole() == Role.SELLER || user.getRole() == Role.ADMIN) ? user : null;
-    }
+    private User actor(Authentication authentication) { return CurrentUser.of(users, authentication); }
+
+    private User seller(Authentication authentication) { return CurrentUser.withRole(users, authentication, Role.SELLER, Role.ADMIN); }
 
     @Transactional(readOnly = true)
     @GetMapping("/dashboard")
@@ -109,7 +109,7 @@ public class SellerPortalController {
     @GetMapping("/orders")
     @Transactional
     public ResponseEntity<?> sellerOrders(Authentication authentication) {
-        User seller = access.ownerForOrders(authentication == null ? null : users.findByEmail(authentication.getName()).orElse(null));
+        User seller = access.ownerForOrders(actor(authentication));
         if (seller == null) return ResponseEntity.status(403).build();
         List<Map<String, Object>> result = new ArrayList<>();
         for (Order order : orders.findOrdersBySellerId(seller.getId())) {
@@ -134,7 +134,7 @@ public class SellerPortalController {
     @PatchMapping("/orders/{id}")
     @Transactional
     public ResponseEntity<?> update(Authentication authentication, @PathVariable Long id, @RequestBody FulfillmentInput input) {
-        User actor = authentication == null ? null : users.findByEmail(authentication.getName()).orElse(null); SellerFulfillment fulfillment = fulfillments.findById(id).orElse(null);
+        User actor = actor(authentication); SellerFulfillment fulfillment = fulfillments.findById(id).orElse(null);
         if (fulfillment == null || !access.canManageOrders(actor, fulfillment.getSeller())) return ResponseEntity.status(403).build();
         if (fulfillment.getOrder().getStatus() == OrderStatus.PENDING) return ResponseEntity.status(409).body("Le paiement doit être confirmé avant la préparation.");
         if (fulfillment.getOrder().getStatus() == OrderStatus.CANCELLED) return ResponseEntity.status(409).body("Une commande annulée ne peut pas être expédiée.");
@@ -173,17 +173,17 @@ public class SellerPortalController {
     @Transactional(readOnly = true)
     @GetMapping(value="/orders/export", produces="text/csv")
     public ResponseEntity<String> exportOrders(Authentication authentication) {
-        User seller=access.ownerForOrders(authentication==null?null:users.findByEmail(authentication.getName()).orElse(null)); if(seller==null)return ResponseEntity.status(403).build();
+        User seller=access.ownerForOrders(actor(authentication)); if(seller==null)return ResponseEntity.status(403).build();
         StringBuilder csv=new StringBuilder("commande,date,statut,suivi,produits,sous_total\n");
         for(Order order:orders.findOrdersBySellerId(seller.getId())) { SellerFulfillment f=fulfillments.findByOrderAndSeller(order,seller).orElse(null); String items=order.getItems().stream().filter(i->belongsToSeller(i,seller)).map(i->i.getProduct().getName()+" x"+i.getQuantity()).reduce((a,b)->a+" | "+b).orElse(""); BigDecimal total=order.getItems().stream().filter(i->belongsToSeller(i,seller)).map(i->i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity()))).reduce(BigDecimal.ZERO,BigDecimal::add); csv.append(order.getId()).append(',').append(order.getCreatedAt()).append(',').append(f==null?order.getStatus():f.getStatus()).append(',').append(f==null?"":csvEscape(f.getTrackingNumber())).append(',').append(csvEscape(items)).append(',').append(total).append('\n'); }
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=commandes-djibtout.csv").contentType(MediaType.parseMediaType("text/csv;charset=UTF-8")).body(csv.toString());
+        return csvResponse("commandes-djibtout.csv",csv);
     }
 
     private String csvEscape(String value){return "\""+(value==null?"":value.replace("\"","\"\""))+"\"";}
 
     @Transactional(readOnly = true)
     @GetMapping(value="/returns/export", produces="text/csv")
-    public ResponseEntity<String> exportReturns(Authentication authentication){User seller=access.ownerForOrders(authentication==null?null:users.findByEmail(authentication.getName()).orElse(null));if(seller==null)return ResponseEntity.status(403).build();StringBuilder csv=new StringBuilder("retour,date,produit,quantite,statut,motif,remboursement\n");for(ReturnRequest r:returnRequests.findBySellerOrderByCreatedAtDesc(seller))csv.append(r.getId()).append(',').append(r.getCreatedAt()).append(',').append(csvEscape(r.getOrderItem().getProduct().getName())).append(',').append(r.getQuantity()).append(',').append(r.getStatus()).append(',').append(csvEscape(r.getReason())).append(',').append(r.getRefundAmount()).append('\n');return csvResponse("retours-djibtout.csv",csv);}
+    public ResponseEntity<String> exportReturns(Authentication authentication){User seller=access.ownerForOrders(actor(authentication));if(seller==null)return ResponseEntity.status(403).build();StringBuilder csv=new StringBuilder("retour,date,produit,quantite,statut,motif,remboursement\n");for(ReturnRequest r:returnRequests.findBySellerOrderByCreatedAtDesc(seller))csv.append(r.getId()).append(',').append(r.getCreatedAt()).append(',').append(csvEscape(r.getOrderItem().getProduct().getName())).append(',').append(r.getQuantity()).append(',').append(r.getStatus()).append(',').append(csvEscape(r.getReason())).append(',').append(r.getRefundAmount()).append('\n');return csvResponse("retours-djibtout.csv",csv);}
 
     @Transactional(readOnly = true)
     @GetMapping(value="/analytics/export", produces="text/csv")

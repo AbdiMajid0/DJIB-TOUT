@@ -1,8 +1,9 @@
 package com.djibtout.backend.controller;
+import com.djibtout.backend.security.CurrentUser;
 import com.djibtout.backend.entity.*;import com.djibtout.backend.repository.*;import jakarta.validation.constraints.*;import org.springframework.http.*;import org.springframework.security.core.Authentication;import org.springframework.web.bind.annotation.*;import java.util.*;
 @RestController @RequestMapping("/api/lists") public class SavedListController{
  private final SavedListRepository lists;private final UserRepository users;private final ProductRepository products;public SavedListController(SavedListRepository l,UserRepository u,ProductRepository p){lists=l;users=u;products=p;}
- private User user(Authentication a){return a==null?null:users.findByEmail(a.getName()).orElse(null);} private SavedList owned(Authentication a,Long id){User u=user(a);SavedList x=lists.findById(id).orElse(null);return u!=null&&x!=null&&x.getUser().getId().equals(u.getId())?x:null;}
+ private User user(Authentication a){return CurrentUser.of(users,a);} private SavedList owned(Authentication a,Long id){User u=user(a);SavedList x=lists.findById(id).orElse(null);return u!=null&&x!=null&&x.getUser().getId().equals(u.getId())?x:null;}
  /** `open-in-view=false` : la session est fermee des la sortie du repository.
   *  Sans transaction ici, lire `productIds` (@ElementCollection LAZY) leve une
   *  LazyInitializationException — que Spring transforme en 401 trompeur via le

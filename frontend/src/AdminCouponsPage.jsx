@@ -1,19 +1,12 @@
 import React from 'react'
 import { AlertCircle, CheckCircle2, Pencil, Plus, Trash2, X } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateCourte, money } from './lib/api'
 import './admin-config.css'
 
 const vide = { code: '', discountType: 'PERCENTAGE', discountValue: '', expiresAt: '', usageLimit: '', active: true }
 
-const montant = (n) => new Intl.NumberFormat('fr-FR').format(Number(n || 0)) + ' FDJ'
 const remise = (c) =>
-  c.discountType === 'PERCENTAGE' ? `${Number(c.discountValue || 0)} %` : montant(c.discountValue)
-
-const dateCourte = (v) => {
-  if (!v) return null
-  const d = new Date(v)
-  return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleDateString('fr-FR')
-}
+  c.discountType === 'PERCENTAGE' ? `${Number(c.discountValue || 0)} %` : money(c.discountValue)
 
 // Reprend isUsable() du backend : actif, non expire, quota non atteint.
 const utilisable = (c) =>
@@ -187,7 +180,7 @@ export default function AdminCouponsPage() {
                       {Number(c.usedCount || 0)}
                       {c.usageLimit != null ? ` / ${c.usageLimit}` : <span className="cfg-gris"> / illimité</span>}
                     </td>
-                    <td>{dateCourte(c.expiresAt) || <span className="cfg-gris">—</span>}</td>
+                    <td>{dateCourte(c.expiresAt, null) || <span className="cfg-gris">—</span>}</td>
                     <td>
                       <span className={`cfg-etat ${ok ? 'actif' : 'inactif'}`}>
                         {!c.active ? 'Désactivé'

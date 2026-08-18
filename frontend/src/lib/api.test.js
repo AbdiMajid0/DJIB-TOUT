@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { api, imageUrl, money } from './api'
+import { api, apiBlob, dateCourte, dateHeure, dateLisible, imageUrl, money, saveBlob } from './api'
 
 // api.js lit localStorage a chaque appel. On le remplace par un double : le
 // test n'a pas besoin d'un DOM, seulement d'un objet qui repond getItem.
@@ -103,5 +103,61 @@ describe('money', () => {
 
   it('suffixe la devise locale', () => {
     expect(money(1500)).toMatch(/FDJ$/)
+  })
+
+  // Le franc djiboutien n a pas de centimes : une commission de 1500,333
+  // s affichait « 1 500,333 FDJ » dans les tableaux de reglements.
+  it('arrondit les montants issus d un calcul', () => {
+    expect(money(1500.6)).toBe(money(1501))
+  })
+})
+
+describe('formats de date', () => {
+  const noel = '2026-12-25T08:30:00Z'
+
+  it('rend le tiret cadratin sur une valeur absente ou illisible', () => {
+    expect(dateCourte(null)).toBe('—')
+    expect(dateLisible('pas une date')).toBe('—')
+    expect(dateHeure(undefined)).toBe('—')
+  })
+
+  it('accepte un repli explicite quand l interface en propose un', () => {
+    expect(dateCourte(null, null)).toBeNull()
+    expect(dateCourte('', 'Immédiat')).toBe('Immédiat')
+  })
+
+  it('formate en francais, avec ou sans heure', () => {
+    expect(dateCourte(noel)).toMatch(/2026/)
+    expect(dateLisible(noel)).toMatch(/déc/)
+    expect(dateHeure(noel)).toMatch(/2026.*\d{2}:\d{2}/)
+  })
+})
+
+describe('telechargements authentifies', () => {
+  it('ajoute le jeton et rend le blob', async () => {
+    globalThis.localStorage = { getItem: () => 'jeton', setItem: () => {}, removeItem: () => {} }
+    const blob = { type: 'text/csv' }
+    const appel = vi.fn().mockResolvedValue({ ok: true, status: 200, blob: async () => blob })
+    vi.stubGlobal('fetch', appel)
+    await expect(apiBlob('/seller/orders/export')).resolves.toBe(blob)
+    expect(appel.mock.calls[0][1].headers.Authorization).toBe('Bearer jeton')
+  })
+
+  // Sans statut sur l erreur, l appelant ne peut pas distinguer un export
+  // interdit (403) d une panne, et affichait « undefined ».
+  it('porte le statut quand le serveur refuse l export', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 403 }))
+    await expect(apiBlob('/seller/orders/export')).rejects.toMatchObject({ status: 403 })
+  })
+
+  it('libere l URL du blob apres avoir declenche l enregistrement', () => {
+    const lien = { click: vi.fn(), href: '', download: '' }
+    vi.stubGlobal('document', { createElement: () => lien })
+    const revoke = vi.fn()
+    vi.stubGlobal('URL', { createObjectURL: () => 'blob:x', revokeObjectURL: revoke })
+    saveBlob({}, 'export.csv')
+    expect(lien.download).toBe('export.csv')
+    expect(lien.click).toHaveBeenCalled()
+    expect(revoke).toHaveBeenCalledWith('blob:x')
   })
 })

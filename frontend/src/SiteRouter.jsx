@@ -44,7 +44,7 @@ import {
   X,
 } from "lucide-react";
 import HomePage from "./App";
-import { api, imageUrl, money } from "./lib/api";
+import {api,imageUrl,money,dateCourte,dateHeure,saveBlob} from './lib/api';
 import { cleArticle, useUser } from "./context/UserContext";
 import AccountDeletionPage from "./AccountDeletionPage";
 import ProductDetailPage from "./ProductDetailPage";
@@ -1779,14 +1779,10 @@ function ProfileForm({ profile, summary, onSaved, onLogout }) {
   }
   async function exportData() {
     const value = await api("/account/export");
-    const url = URL.createObjectURL(
+    saveBlob(
       new Blob([JSON.stringify(value, null, 2)], { type: "application/json" }),
+      "djibtout-mes-donnees.json",
     );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "djibtout-mes-donnees.json";
-    a.click();
-    URL.revokeObjectURL(url);
   }
   return (
     <div className="profile-layout">
@@ -2140,7 +2136,7 @@ function OrdersPanel({ orders = [] }) {
               </span>
               <span>
                 <small>Passée le</small>
-                <b>{new Date(o.createdAt).toLocaleDateString("fr-FR")}</b>
+                <b>{dateCourte(o.createdAt)}</b>
               </span>
               <em>{statusLabel(o.status)}</em>
             </header>
@@ -2251,7 +2247,7 @@ function NotificationsPanel({ items = [], reload }) {
             <Bell />
           </div>
           <div>
-            <small>{new Date(n.createdAt).toLocaleString("fr-FR")}</small>
+            <small>{dateHeure(n.createdAt)}</small>
             <h3>{n.title}</h3>
             <p>{n.message}</p>
             {n.link && <Link to={n.link}>Voir le détail</Link>}
@@ -2362,7 +2358,7 @@ function ReviewsPanel({ items = [] }) {
               <blockquote>Réponse du vendeur : {x.sellerResponse}</blockquote>
             )}
           </div>
-          <span>{new Date(x.createdAt).toLocaleDateString("fr-FR")}</span>
+          <span>{dateCourte(x.createdAt)}</span>
         </article>
       ))}
     </div>
@@ -2423,7 +2419,7 @@ function CouponsPanel({ items = [] }) {
           </h3>
           <p>
             {x.expiresAt
-              ? `Valable jusqu'au ${new Date(x.expiresAt).toLocaleDateString("fr-FR")}`
+              ? `Valable jusqu'au ${dateCourte(x.expiresAt)}`
               : "Sans date d’expiration"}
           </p>
           <button onClick={() => copy(x.code)}>Copier le code</button>
@@ -2613,7 +2609,7 @@ function WalletPanel({ data, reload }) {
           <p key={t.id}>
             <span>
               {t.reason}
-              <small>{new Date(t.createdAt).toLocaleDateString("fr-FR")}</small>
+              <small>{dateCourte(t.createdAt)}</small>
             </span>
             <b className={t.type === "CREDIT" ? "positive" : ""}>
               {t.type === "CREDIT" ? "+" : "−"} {money(t.amount)}
@@ -2926,7 +2922,7 @@ function OrderDetail() {
           <div>
             <small>
               Commande du{" "}
-              {new Date(order.createdAt).toLocaleDateString("fr-FR")}
+              {dateCourte(order.createdAt)}
             </small>
             <h1>Commande #DT-{order.id}</h1>
           </div>

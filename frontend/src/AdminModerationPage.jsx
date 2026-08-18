@@ -1,13 +1,7 @@
 import React from 'react'
 import { AlertCircle, CheckCircle2, Eye, EyeOff, MessageSquare, Star } from 'lucide-react'
-import { api } from './lib/api'
+import { api, dateLisible } from './lib/api'
 import './admin-moderation.css'
-
-const date = (v) => {
-  if (!v) return '—'
-  const d = new Date(v)
-  return isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
-}
 
 const FILTRES = [['ALL', 'Tous'], ['VISIBLE', 'Visibles'], ['HIDDEN', 'Masqués']]
 
@@ -114,7 +108,7 @@ export default function AdminModerationPage() {
                   <div className="mo-qui">
                     <b>{x.user?.name || x.user?.email || 'Utilisateur inconnu'}</b>
                     <small>
-                      {x.product?.name || 'Produit supprimé'} · {date(x.createdAt)}
+                      {x.product?.name || 'Produit supprimé'} · {dateLisible(x.createdAt)}
                     </small>
                   </div>
                   {onglet === 'avis' && x.rating != null && (
