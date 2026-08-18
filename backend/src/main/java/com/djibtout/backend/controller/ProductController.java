@@ -83,12 +83,11 @@ public class ProductController {
     @Transactional(readOnly = true)
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(product -> {
-                    if (product.getImages() != null) product.getImages().size();
-                    return ResponseEntity.ok(product);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Product product = productService.getProductById(id).orElse(null);
+        if (product == null || (!product.isVisible() && !sellerAccess.canManageCatalog(getAuthenticatedUser(), product)))
+            return ResponseEntity.notFound().build();
+        if (product.getImages() != null) product.getImages().size();
+        return ResponseEntity.ok(product);
     }
 
     @Transactional
@@ -188,7 +187,7 @@ public class ProductController {
             @NotNull @DecimalMin("0.00") @Digits(integer = 10, fraction = 2) BigDecimal price,
             @NotNull @PositiveOrZero Integer stockQuantity,
             @NotBlank @Size(max = 100) String category,
-            @Size(max = 8) List<@Size(max = 1000) String> images,
+            @Size(max = 8) List<@Size(max = 1000) @Pattern(regexp = "(?i)^(https?://|/uploads/|data:image/).*") String> images,
             @Size(max = 1000) String videoUrl,
             @DecimalMin("0.00") @Digits(integer = 10, fraction = 2) BigDecimal originalPrice,
             @Size(max = 100) String brand,
