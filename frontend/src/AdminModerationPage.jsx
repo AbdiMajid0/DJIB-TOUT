@@ -22,7 +22,9 @@ export default function AdminModerationPage() {
 
   const load = React.useCallback(() => {
     api('/admin/reviews').then((d) => setReviews(Array.isArray(d) ? d : [])).catch((e) => { setErreur(e.message); setReviews([]) })
-    api('/admin/questions').then((d) => setQuestions(Array.isArray(d) ? d : [])).catch(() => setQuestions([]))
+    // L'onglet « Questions » affichait « Aucun élément » quand l'appel echouait :
+    // un contenu a moderer semblait donc absent alors qu'il n'avait pas ete lu.
+    api('/admin/questions').then((d) => setQuestions(Array.isArray(d) ? d : [])).catch((e) => { setErreur(e.message); setQuestions([]) })
   }, [])
 
   React.useEffect(() => { load() }, [load])

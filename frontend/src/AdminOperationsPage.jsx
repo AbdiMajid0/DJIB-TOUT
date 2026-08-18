@@ -38,7 +38,9 @@ export default function AdminOperationsPage() {
 
   const load = React.useCallback(() => {
     api('/admin/orders').then((d) => setOrders(Array.isArray(d) ? d : [])).catch((e) => { setErreur(e.message); setOrders([]) })
-    api('/admin/returns').then((d) => setReturns(Array.isArray(d) ? d : [])).catch(() => setReturns([]))
+    // Sans remontee, l'onglet « Retours » restait vide : une demande de retour
+    // non lue etait indiscernable d'une absence de demande.
+    api('/admin/returns').then((d) => setReturns(Array.isArray(d) ? d : [])).catch((e) => { setErreur(e.message); setReturns([]) })
   }, [])
 
   React.useEffect(() => { load() }, [load])

@@ -3888,6 +3888,10 @@ function DynamicHome() {
   const [meta, setMeta] = React.useState({ categories: [] });
   const [campaigns, setCampaigns] = React.useState([]);
   const [sections, setSections] = React.useState([]);
+  // L'erreur etait avalee : l'accueil s'affichait vide, sans nouveautes ni
+  // categories, comme si la boutique n'avait rien a vendre. Le visiteur ne
+  // pouvait pas distinguer un catalogue vide d'une API en panne.
+  const [error, setError] = React.useState("");
   React.useEffect(() => {
     Promise.all([
       api("/products?page=0&size=10&sort=newest"),
@@ -3903,12 +3907,17 @@ function DynamicHome() {
         setCampaigns(c || []);
         setSections(s || []);
       })
-      .catch(() => {});
+      .catch((e) => setError(e.message));
   }, []);
   const hero = campaigns[0];
   return (
     <Shop>
       <main>
+        {error && (
+          <div className="shell">
+            <div className="api-error">{error}</div>
+          </div>
+        )}
         <section className="hero">
           <div className="shell hero-grid">
             <div className="hero-main">

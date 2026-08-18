@@ -3,6 +3,8 @@ package com.djibtout.backend.service;
 import com.djibtout.backend.entity.BuyerNotification;
 import com.djibtout.backend.entity.User;
 import com.djibtout.backend.repository.BuyerNotificationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class BuyerNotificationService {
+    private static final Logger log = LoggerFactory.getLogger(BuyerNotificationService.class);
+
     private final BuyerNotificationRepository notifications;
 
     public BuyerNotificationService(BuyerNotificationRepository notifications) {
@@ -27,9 +31,13 @@ public class BuyerNotificationService {
             n.setMessage(message);
             n.setLink(link);
             notifications.save(n);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             // Une notification perdue est moins grave qu'une operation metier
-            // interrompue : on n'annule pas la transaction appelante.
+            // interrompue : on n'annule pas la transaction appelante. Elle est
+            // journalisee, sans quoi une panne d'ecriture durable ne laisse
+            // aucune trace : les clients cessent d'etre prevenus en silence.
+            log.warn("Notification acheteur non enregistree (compte={}, titre={})",
+                    user.getId(), title, e);
         }
     }
 }
